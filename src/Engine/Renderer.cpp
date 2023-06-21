@@ -7,6 +7,8 @@
 #include "Engine/Mesh/VertexArray.h"
 #include "Engine/Mesh/VertexBuffer.h"
 
+#include "Engine/SpriteRenderer.h"
+
 #include <iostream>
 
 namespace Renderer
@@ -87,6 +89,8 @@ namespace Renderer
         if (debugEnable)
             DebugEnable();
         BlitSetup();
+        SpriteRenderer::Initialise();
+        SpriteRenderer::pixelScreenSize = GetWinSize();
     }
 
     void ClearScreen(GLbitfield mask)
@@ -107,6 +111,12 @@ namespace Renderer
     void BindScreenBuffer()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void Render()
+    {
+        SpriteRenderer::pixelScreenSize = GetWinSize();
+        SpriteRenderer::RenderAll(0);
     }
 
     // blit stuff
@@ -134,33 +144,51 @@ namespace Renderer
     // Texture2D
     void Blit(const Texture2D* src, RenderTexture* dest)
     {
-        BlitRaw(src->GetID(), 0, dest->GetID(), v2i(dest->width, dest->height), blitMat);
+        if (dest == nullptr)
+            BlitRaw(src->GetID(), 0, 0, GetWinSize(), blitMat);
+        else
+            BlitRaw(src->GetID(), 0, dest->GetID(), v2i(dest->width, dest->height), blitMat);
     }
 
     void Blit(const Texture2D* src, RenderTexture* dest, Material* mat)
     {
-        BlitRaw(src->GetID(), 0, dest->GetID(), v2i(dest->width, dest->height), mat);
+        if (dest == nullptr)
+            BlitRaw(src->GetID(), 0, 0, GetWinSize(), mat);
+        else
+            BlitRaw(src->GetID(), 0, dest->GetID(), v2i(dest->width, dest->height), mat);
     }
 
     void Blit(const Texture2D* src, const Texture2D* depth, RenderTexture* dest)
     {
-        BlitRaw(src->GetID(), depth->GetID(), dest->GetID(), v2i(dest->width, dest->height), blitMat);
+        if (dest == nullptr)
+            BlitRaw(src->GetID(), 0, dest->GetID(), GetWinSize(), blitMat);
+        else
+            BlitRaw(src->GetID(), depth->GetID(), dest->GetID(), v2i(dest->width, dest->height), blitMat);
     }
 
     void Blit(const Texture2D* src, const Texture2D* depth, RenderTexture* dest, Material* mat)
     {
-        BlitRaw(src->GetID(), depth->GetID(), dest->GetID(), v2i(dest->width, dest->height), mat);
+        if (dest == nullptr)
+            BlitRaw(src->GetID(), depth->GetID(), 0, GetWinSize(), mat);
+        else
+            BlitRaw(src->GetID(), depth->GetID(), dest->GetID(), v2i(dest->width, dest->height), mat);
     }
 
     // RenderTexture
     void Blit(const RenderTexture* src, RenderTexture* dest, bool drawDepth)
     {
-        BlitRaw(src->colourBuffer->GetID(), drawDepth ? src->depthBuffer->GetID() : 0, dest->GetID(), v2i(dest->width, dest->height), blitMat);
+        if (dest == nullptr)
+            BlitRaw(src->colourBuffer->GetID(), drawDepth ? src->depthBuffer->GetID() : 0, 0, GetWinSize(), blitMat);
+        else
+            BlitRaw(src->colourBuffer->GetID(), drawDepth ? src->depthBuffer->GetID() : 0, dest->GetID(), v2i(dest->width, dest->height), blitMat);
     }
 
     void Blit(const RenderTexture* src, RenderTexture* dest, Material* mat, bool drawDepth)
     {
-        BlitRaw(src->colourBuffer->GetID(), drawDepth ? src->depthBuffer->GetID() : 0, dest->GetID(), v2i(dest->width, dest->height), mat);
+        if (dest == nullptr)
+            BlitRaw(src->colourBuffer->GetID(), drawDepth ? src->depthBuffer->GetID() : 0, 0, GetWinSize(), mat);
+        else
+            BlitRaw(src->colourBuffer->GetID(), drawDepth ? src->depthBuffer->GetID() : 0, dest->GetID(), v2i(dest->width, dest->height), mat);
     }
 
     // Raw
@@ -194,22 +222,13 @@ namespace Renderer
         blitVA->DisableAttribute(0);
     }
 
-    // onto RenderTexture id 0
-    void BlitToScreen(const Texture2D* src, const v2i& winSize)
-    {
-        BlitRaw(src->GetID(), 0, 0, winSize, blitMat);
-    }
-
-    void BlitToScreen(const RenderTexture* src, const v2i& winSize)
-    {
-        BlitRaw(src->colourBuffer->GetID(), 0, 0, winSize, blitMat);
-    }
-
     void Release()
     {
         delete blitVB;
         delete blitVA;
         delete blitShader;
         delete blitMat;
+
+        SpriteRenderer::Release();
     }
 }

@@ -24,6 +24,7 @@ struct v2
 	static float Magnitude(const v2& a);
 	static float Distance(const v2& a, const v2& b);
 	static v2 Normalize(const v2& a);
+	static v2 Reciprocal(const v2& a);
 	
 	v2 operator+(const v2& a) const;
 	v2 operator-() const;

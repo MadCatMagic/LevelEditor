@@ -55,6 +55,11 @@ v2 v2::Normalize(const v2& a)
 		return zero;
 }
 
+v2 v2::Reciprocal(const v2& a)
+{
+	return v2(1.0f / a.x, 1.0f / a.y);
+}
+
 v2 v2::operator+(const v2& a) const
 {
 	return v2(x + a.x, y + a.y);

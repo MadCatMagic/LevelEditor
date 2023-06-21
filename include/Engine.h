@@ -4,6 +4,7 @@
 #include "imgui_impl_opengl3.h"
 
 #include "Engine/Renderer.h"
+#include "Editor/Editor.h"
 
 class Engine
 {
@@ -28,8 +29,8 @@ private:
 
 	// aa
 	ImGuiIO* io = nullptr;
-	bool show_demo_window = true;
-	bool show_another_window = false;
-	v4 clear_color = v4(0.45f, 0.55f, 0.60f, 1.00f);
+
+	Editor editor;
+	Level* level = nullptr;
 };
 

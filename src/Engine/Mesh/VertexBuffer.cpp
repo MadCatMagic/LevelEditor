@@ -48,7 +48,8 @@ VertexBuffer& VertexBuffer::operator=(VertexBuffer&& other) noexcept
 
 void VertexBuffer::SetData(const void* data, unsigned int size, UsageHint hint)
 {
-	glGenBuffers(1, &id);
+	if (id == -1)
+		glGenBuffers(1, &id);
 	Bind();
 	glBufferData(GL_ARRAY_BUFFER, size, data, (int)hint);
 }

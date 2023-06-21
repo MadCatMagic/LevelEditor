@@ -19,6 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Editor\EditorGizmos.cpp" />
+    <ClCompile Include="src\Engine\Input.cpp" />
+    <ClCompile Include="src\Engine\SpriteRenderer.cpp" />
+    <ClCompile Include="src\Editor\Editor.cpp" />
     <ClCompile Include="dependencies\include\imgui.cpp" />
     <ClCompile Include="dependencies\include\imgui_demo.cpp" />
     <ClCompile Include="dependencies\include\imgui_draw.cpp" />
@@ -26,6 +30,8 @@
     <ClCompile Include="dependencies\include\imgui_impl_opengl3.cpp" />
     <ClCompile Include="dependencies\include\imgui_tables.cpp" />
     <ClCompile Include="dependencies\include\imgui_widgets.cpp" />
+    <ClCompile Include="src\Editor\GeometryTool.cpp" />
+    <ClCompile Include="src\Editor\Level.cpp" />
     <ClCompile Include="src\Engine\Engine.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Engine\Mesh\Material.cpp" />
@@ -34,7 +40,6 @@
     <ClCompile Include="src\Engine\Mesh\VertexBuffer.cpp" />
     <ClCompile Include="src\Engine\PixelTexture2D.cpp" />
     <ClCompile Include="src\Engine\Renderer.cpp" />
-    <ClCompile Include="src\Engine\Texture\Cubemap.cpp" />
     <ClCompile Include="src\Engine\Texture\Image.cpp" />
     <ClCompile Include="src\Engine\Texture\ImageLoader.cpp" />
     <ClCompile Include="src\Engine\Texture\RenderTexture.cpp" />
@@ -51,6 +56,8 @@
     <ClCompile Include="src\Maths\Vector4i.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Editor\EditorGizmos.h" />
+    <ClInclude Include="include\Editor\Editor.h" />
     <ClInclude Include="dependencies\include\GLFW\glfw3.h" />
     <ClInclude Include="dependencies\include\GLFW\glfw3native.h" />
     <ClInclude Include="dependencies\include\GL\eglew.h" />
@@ -67,7 +74,9 @@
     <ClInclude Include="dependencies\include\imstb_textedit.h" />
     <ClInclude Include="dependencies\include\imstb_truetype.h" />
     <ClInclude Include="dependencies\include\stb_image.h" />
+    <ClInclude Include="include\Editor\GeometryTool.h" />
     <ClInclude Include="include\Engine.h" />
+    <ClInclude Include="include\Engine\Input.h" />
     <ClInclude Include="include\Engine\Mesh\Material.h" />
     <ClInclude Include="include\Engine\Mesh\Shader.h" />
     <ClInclude Include="include\Engine\Mesh\VertexArray.h" />
@@ -75,7 +84,6 @@
     <ClInclude Include="include\Engine\PixelTexture2D.h" />
     <ClInclude Include="include\Engine\Renderer.h" />
     <ClInclude Include="include\Engine\Texture.h" />
-    <ClInclude Include="include\Engine\Texture\Cubemap.h" />
     <ClInclude Include="include\Engine\Texture\Image.h" />
     <ClInclude Include="include\Engine\Texture\ImageLoader.h" />
     <ClInclude Include="include\Engine\Texture\RenderTexture.h" />
@@ -85,6 +93,8 @@
     <ClInclude Include="include\Quaternion.h" />
     <ClInclude Include="include\Random.h" />
     <ClInclude Include="include\Vector.h" />
+    <ClInclude Include="include\Editor\Level.h" />
+    <ClInclude Include="include\Engine\SpriteRenderer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4a1fb5ea-22f5-42a8-ab92-1d2df5d47fb9}</ProjectGuid>

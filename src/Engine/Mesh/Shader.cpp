@@ -65,7 +65,7 @@ Shader::Shader(Shader&& obj) noexcept
 
 Shader::~Shader()
 {
-    if (id < 150000)
+    if (id != -1)
         glDeleteProgram(id);
 }
 

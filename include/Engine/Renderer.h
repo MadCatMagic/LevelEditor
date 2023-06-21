@@ -22,7 +22,10 @@ namespace Renderer
 	extern void Viewport(const v2i& size, const v2i& offset);
 	extern void BindScreenBuffer();
 
+	extern void Render();
+
 	/* Blit functions */
+	// leave rendertexture as nullptr to blit to screen
 	// using Texture2Ds
 	extern void Blit(const Texture2D* src, RenderTexture* dest);
 	extern void Blit(const Texture2D* src, RenderTexture* dest, Material* mat);
@@ -31,10 +34,9 @@ namespace Renderer
 	// using RenderTextures
 	extern void Blit(const RenderTexture* src, RenderTexture* dest, bool drawDepth);
 	extern void Blit(const RenderTexture* src, RenderTexture* dest, Material* mat, bool drawDepth);
-	// blitting onto RenderTexture id 0
-	// depth ignored here because it wont matter
-	extern void BlitToScreen(const Texture2D* src, const v2i& winSize);
-	extern void BlitToScreen(const RenderTexture* src, const v2i& winSize);
+
+	
+
 
 	// releases any heap variables
 	extern void Release();
