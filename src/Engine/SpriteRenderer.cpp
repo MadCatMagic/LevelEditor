@@ -120,24 +120,15 @@ void SpriteRenderer::Render(unsigned int target)
 	}
 
 	// Use the shader
-	blitMat->Bind();
 	blitMat->SetVector4("tint", tint);
 
-	// Bind our texture in Texture Unit 0
-	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, src);
-	// Set our "renderedTexture" sampler to use Texture Unit 0
-	blitMat->SetTexture("blitTexture", 0);
 
 	// 1rst attribute buffer : vertices
-	blitVB->Bind();
 	blitVB->SetData(quad, sizeof(float) * 18, VertexBuffer::UsageHint::StreamDraw);
-	blitVA->Bind();
-	blitVA->EnableAttribute(0);
 
 	// Draw the triangles !
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	blitVA->DisableAttribute(0);
 }
 
 void SpriteRenderer::SetPos(v2 position)
@@ -209,8 +200,21 @@ void SpriteRenderer::RenderAll(RenderTexture* dest)
 	glBindFramebuffer(GL_FRAMEBUFFER, target);
 	Renderer::Viewport(Renderer::GetWinSize());
 
+	// moved lots of blit calls outside of the render function
+	blitMat->Bind();
+	// Bind our texture in Texture Unit 0
+	glActiveTexture(GL_TEXTURE0);
+	// Set our "renderedTexture" sampler to use Texture Unit 0
+	blitMat->SetTexture("blitTexture", 0);
+
+	blitVB->Bind();
+	blitVA->Bind();
+	blitVA->EnableAttribute(0);
+
 	for (SpriteRenderer* r : renderers)
 		r->Render(target);
+
+	blitVA->DisableAttribute(0);
 }
 
 void SpriteRenderer::Initialise()
