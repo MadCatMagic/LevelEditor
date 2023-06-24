@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "Editor/EditorGizmos.h"
+#include "Compiler/FileManager.h"
 
 Editor::Editor()
 {
@@ -34,25 +35,13 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
     initialized = true;
 
     winSize = windowSize;
-    level = target;
     whiteTex = new Texture2D("res/white.png");
-
-    // setup renderers
-    spriteRenderers = new SpriteRenderer[level->dimensions.x * level->dimensions.y];
-    for (int y = 0; y < level->dimensions.y; y++)
-        for (int x = 0; x < level->dimensions.x; x++)
-        {
-            int i = GetIndex(x, y);
-            // set stuff
-            spriteRenderers[i].SetTexture(whiteTex);
-            // make checkerboard pattern
-            float v = (x + y) % 2 == 0 ? 0.9f : 0.85f;
-            spriteRenderers[i].tint = v4(v, v, v, 1.0f);
-        }
 
     // setup tools
     tools.push_back(new DrawGeometryTool(target, "geometry_draw_icon.png"));
     tools.push_back(new BoxGeometryTool(target, "geometry_boxfill_icon.png"));
+
+    ReloadLevel(target);
 
     // setup gizmos
     EditorGizmos::Initialize(this);
@@ -104,15 +93,15 @@ void Editor::Render(RenderTexture* target)
         {
             // translate from tile space to pixel space
             int i = GetIndex(x, y);
-            v2 targetPos = WorldToPixel(v2(x, y));
+            v2 targetPos = WorldToPixel((v2)v2i(x, y));
             spriteRenderers[i].SetPixelPos(targetPos);
             spriteRenderers[i].SetScale(viewerScale);
 
             // ensure it renders properly
             if (level->GetTile(v2i(x, y))->solid)
-                spriteRenderers[GetIndex(x, y)].render = true;
+                spriteRenderers[i].render = true;
             else
-                spriteRenderers[GetIndex(x, y)].render = false;
+                spriteRenderers[i].render = false;
         }
 }
 
@@ -134,7 +123,7 @@ void Editor::RenderUI(ImGuiIO* io)
     //ImGui::Text("counter = %d", counter);
 
     // tool option menu
-    for (int i = 0; i < tools.size(); i++)
+    for (int i = 0; i < (int)tools.size(); i++)
     {
         ImGui::PushID(i); // probably not that necessary
         if (ImGui::ImageButton(
@@ -151,6 +140,23 @@ void Editor::RenderUI(ImGuiIO* io)
         ImGui::SameLine();
     }
     ImGui::NewLine();
+
+    // level managing
+    static char fname[64] = "level0";
+    ImGui::InputText("File name", fname, 64);
+    if (ImGui::Button("Save Level"))
+    {
+        FileManager fm = FileManager();
+        fm.SaveLevel(level, std::string(fname));
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Load Level"))
+    {
+        FileManager fm = FileManager();
+        Level* l = fm.LoadLevel(std::string(fname));
+        if (l != nullptr)
+            ReloadLevel(l);
+    }
 
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
     ImGui::End();
@@ -184,4 +190,29 @@ int Editor::GetIndex(const v2i& pos) const
 int Editor::GetIndex(int x, int y) const
 {
     return x + y * level->dimensions.x;
+}
+
+void Editor::ReloadLevel(Level* l)
+{
+    level = l;
+
+    // setup renderers
+    if (spriteRenderers != nullptr)
+        delete[] spriteRenderers;
+
+    spriteRenderers = new SpriteRenderer[level->dimensions.x * level->dimensions.y];
+    for (int y = 0; y < level->dimensions.y; y++)
+        for (int x = 0; x < level->dimensions.x; x++)
+        {
+            int i = GetIndex(x, y);
+            // set stuff
+            spriteRenderers[i].SetTexture(whiteTex);
+            // make checkerboard pattern
+            float v = (x + y) % 2 == 0 ? 0.9f : 0.85f;
+            spriteRenderers[i].tint = v4(v, v, v, 1.0f);
+        }
+
+    // reload tools
+    for each (GeometryTool* t in tools)
+        t->SetLevel(level);
 }

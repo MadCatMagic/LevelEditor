@@ -15,13 +15,12 @@ namespace v2iHash
 	}
 }
 
-Level::Level(const v2i& dimensions)
+Level::Level(const v2i& chunkDimensions)
 {
-	this->dimensions = dimensions;
+	this->dimensions = chunkDimensions * TILE_CHUNK_SIZE;
 
-	// q = (x + y - 1) / y for finding rounded up result of x/y
-	for (int y = 0; y < (dimensions.y + TILE_CHUNK_SIZE - 1) / TILE_CHUNK_SIZE; y++)
-		for (int x = 0; x < (dimensions.x + TILE_CHUNK_SIZE - 1) / TILE_CHUNK_SIZE; x++)
+	for (int y = 0; y < chunkDimensions.y; y++)
+		for (int x = 0; x < chunkDimensions.x; x++)
 		{
 			CreateChunk(v2i(x, y));
 		}
@@ -59,6 +58,11 @@ void Level::CreateChunk(const v2i& chunkPos)
 {
 	TileChunk* c = new TileChunk();
 	c->chunkPos = chunkPos;
-	chunks.push_back(c);
-	chunkMap.insert(std::make_pair(chunkPos, chunks.size() - 1));
+	CreateChunk(c);
+}
+
+void Level::CreateChunk(TileChunk* chunk)
+{
+	chunks.push_back(chunk);
+	chunkMap.insert(std::make_pair(chunk->chunkPos, chunks.size() - 1));
 }

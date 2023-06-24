@@ -30,7 +30,10 @@ namespace v2iHash
 class Level
 {
 public:
-	Level(const v2i& dimensions);
+	friend class FileManager;
+	friend class Compiler;
+
+	Level(const v2i& chunkDimensions);
 	~Level();
 
 	TileData* GetTile(const v2i& pos);
@@ -41,6 +44,7 @@ public:
 
 private:
 	void CreateChunk(const v2i& chunkPos);
+	void CreateChunk(TileChunk* chunk);
 
 	std::vector<TileChunk*> chunks;
 	std::unordered_map<v2i, int, v2iHash::KeyHash, v2iHash::KeyEqual> chunkMap;

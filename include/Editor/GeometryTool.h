@@ -14,6 +14,8 @@ public:
 
 	unsigned int GetTextureID() const;
 
+	inline void SetLevel(Level* l) { level = l; }
+
 protected:
 	Level* level;
 

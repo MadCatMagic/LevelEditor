@@ -25,6 +25,8 @@ private:
 	int GetIndex(const v2i& pos) const;
 	int GetIndex(int x, int y) const;
 
+	void ReloadLevel(Level* l);
+
 	Level* level{ nullptr };
 	class Texture2D* whiteTex = nullptr;
 	class SpriteRenderer* spriteRenderers = nullptr;
