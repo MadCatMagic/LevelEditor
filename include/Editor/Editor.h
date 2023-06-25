@@ -43,5 +43,8 @@ private:
 	// editing tools
 	std::vector<GeometryTool*> tools;
 	int selectedTool = 0;
+	
+	// testing
+	std::vector<v2> compiledGeometry;
 };
 

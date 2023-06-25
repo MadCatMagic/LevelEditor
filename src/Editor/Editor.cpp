@@ -117,6 +117,13 @@ void Editor::Render(RenderTexture* target)
             else
                 spriteRenderers[i].SetTexture(whiteTex);
         }
+
+    // testing
+    EditorGizmos::SetColour(v4(1.0f, 0.0f, 0.0f, 0.5f));
+    for (int i = 0; i < compiledGeometry.size(); i += 2)
+    {
+        EditorGizmos::DrawLine(compiledGeometry[i], compiledGeometry[i + 1], 2.0f);
+    }
 }
 
 void Editor::RenderUI(ImGuiIO* io)
@@ -170,6 +177,13 @@ void Editor::RenderUI(ImGuiIO* io)
         Level* l = fm.LoadLevel(std::string(fname));
         if (l != nullptr)
             ReloadLevel(l);
+    }
+
+    // testing
+    if (ImGui::Button("test exporter"))
+    {
+        Compiler c = Compiler(level);
+        compiledGeometry = c.CompileGeometry();
     }
 
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
