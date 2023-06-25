@@ -2,9 +2,13 @@
 #include "Vector.h"
 #include <unordered_map>
 #include <iostream>
+
+#include "imgui.h"
+
 namespace Input
 {
 	GLFWwindow* window = nullptr;
+	ImGuiIO* io = nullptr;
 	v2i winSize;
 
 	// stores the opengl states
@@ -79,6 +83,8 @@ namespace Input
 
 	static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 	{
+		if (io != nullptr && io->WantCaptureMouse)
+			return;
 		mouseButtonState[button] = action;
 	}
 
@@ -117,8 +123,9 @@ namespace Input
 		return v2(cursorPosX / winSize.x, cursorPosY / winSize.y);
 	}
 
-	void EnableInput(GLFWwindow* _window)
+	void EnableInput(GLFWwindow* _window, ImGuiIO* imguiIO)
 	{
+		io = imguiIO;
 		window = _window;
 
 		int width, height;

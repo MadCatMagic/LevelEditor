@@ -46,3 +46,11 @@ private:
 	bool held = false;
 	bool solid;
 };
+
+class RotateGeometryTool : public GeometryTool
+{
+public:
+	using GeometryTool::GeometryTool;
+	
+	void OnClick(bool shift, bool ctrl, const v2i& pos) override;
+};

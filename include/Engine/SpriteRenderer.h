@@ -12,11 +12,12 @@ public:
 	void SetTexture(RenderTexture* tex);
 	void Clear();
 
-	void SetPos(v2 position);
 	void SetPixelPos(v2 pixelPos);
 
 	void SetScale(v2 scale);
-	void SetPixelSizing(v2i size);
+
+	void SetRotation(float degrees);
+	void SetRotation(int tileRotation); // 0 to 3 (mod 4) for multiples of 90
 
 	void SetLayer(int l);
 
@@ -41,6 +42,10 @@ private:
 	v2 scale = v2::one;
 
 	v2i pixelSize;
+	
+	// radians
+	float rotation = 0.0f;
+	int tileRot = -1;
 
 	static std::vector<SpriteRenderer*> renderers;
 };

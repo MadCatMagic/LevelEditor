@@ -9,6 +9,8 @@
 struct v2;
 struct v2i;
 
+struct ImGuiIO;
+
 namespace Input
 {
 	// keyboard
@@ -51,27 +53,27 @@ namespace Input
 		Key::LSHIFT, Key::RSHIFT, Key::LCONTROL, Key::RCONTROL, Key::LALT, Key::RALT
 	};
 
-	bool GetKey(Key key);
-	bool GetKeyDown(Key key);
-	bool GetKeyUp(Key key);
+	extern bool GetKey(Key key);
+	extern bool GetKeyDown(Key key);
+	extern bool GetKeyUp(Key key);
 
-	bool GetMouseButton(int button);
-	bool GetMouseButtonDown(int button);
-	bool GetMouseButtonUp(int button);
+	extern bool GetMouseButton(int button);
+	extern bool GetMouseButtonDown(int button);
+	extern bool GetMouseButtonUp(int button);
 
 	// mouse
 	enum class CursorType {
 		NORMAL = GLFW_CURSOR_NORMAL, HIDDEN = GLFW_CURSOR_HIDDEN, LOCKED = GLFW_CURSOR_DISABLED
 	};
 
-	void SetCursorType(CursorType type);
-	void EnableRawCursorData();
+	extern void SetCursorType(CursorType type);
+	extern void EnableRawCursorData();
 	
 	extern float cursorPosX;
 	extern float cursorPosY;
 
-	v2i GetCursorPixelPos();
-	v2 GetCursorPos();
+	extern v2i GetCursorPixelPos();
+	extern v2 GetCursorPos();
 
 	extern float diffX;
 	extern float diffY;
@@ -79,6 +81,6 @@ namespace Input
 	extern float scrollDiff;
 
 	// all
-	void EnableInput(GLFWwindow* window);
-	void InputUpdate();
+	extern void EnableInput(GLFWwindow* window, ImGuiIO* imguiIO);
+	extern void InputUpdate();
 };

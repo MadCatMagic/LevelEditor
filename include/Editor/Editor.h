@@ -29,6 +29,7 @@ private:
 
 	Level* level{ nullptr };
 	class Texture2D* whiteTex = nullptr;
+	Texture2D* slantTex = nullptr;
 	class SpriteRenderer* spriteRenderers = nullptr;
 
 	// viewing information/rendering

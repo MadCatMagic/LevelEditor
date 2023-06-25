@@ -19,6 +19,7 @@ Editor::~Editor()
     if (initialized)
     {
         delete whiteTex;
+        delete slantTex;
         delete[] spriteRenderers;
 
         for (GeometryTool* tool : tools)
@@ -36,10 +37,14 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
 
     winSize = windowSize;
     whiteTex = new Texture2D("res/white.png");
+    slantTex = new Texture2D("res/slant.png");
+    slantTex->sampling = Texture::Sampling::Nearest;
+    slantTex->ApplyFiltering();
 
     // setup tools
     tools.push_back(new DrawGeometryTool(target, "geometry_draw_icon.png"));
     tools.push_back(new BoxGeometryTool(target, "geometry_boxfill_icon.png"));
+    tools.push_back(new RotateGeometryTool(target, "geometry_boxfill_icon.png")); // need to add icon
 
     ReloadLevel(target);
 
@@ -98,10 +103,19 @@ void Editor::Render(RenderTexture* target)
             spriteRenderers[i].SetScale(viewerScale);
 
             // ensure it renders properly
-            if (level->GetTile(v2i(x, y))->solid)
+            auto tile = level->GetTile(v2i(x, y));
+            if (tile->solid)
                 spriteRenderers[i].render = true;
             else
                 spriteRenderers[i].render = false;
+
+            if (tile->slant != 0)
+            {
+                spriteRenderers[i].SetRotation(tile->slant - 1);
+                spriteRenderers[i].SetTexture(slantTex);
+            }
+            else
+                spriteRenderers[i].SetTexture(whiteTex);
         }
 }
 

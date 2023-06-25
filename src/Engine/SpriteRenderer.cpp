@@ -8,14 +8,14 @@
 
 #include <iostream>
 
-// render stuff
-static const v2 blitQuadData[6] = {
-	v2(-1.0f, -1.0f),
-	v2( 1.0f, -1.0f),
-	v2(-1.0f,  1.0f),
-	v2(-1.0f,  1.0f),
-	v2( 1.0f, -1.0f),
-	v2( 1.0f,  1.0f),
+// render stuff, xy are positions, zw are tex coords
+static const v4 blitQuadData[6] = {
+	v4(-1.0f, -1.0f, 0.0f, 1.0f),
+	v4( 1.0f, -1.0f, 1.0f, 1.0f),
+	v4(-1.0f,  1.0f, 0.0f, 0.0f),
+	v4(-1.0f,  1.0f, 0.0f, 0.0f),
+	v4( 1.0f, -1.0f, 1.0f, 1.0f),
+	v4( 1.0f,  1.0f, 1.0f, 0.0f),
 };
 
 static VertexBuffer* blitVB;
@@ -110,31 +110,36 @@ void SpriteRenderer::Render(unsigned int target)
 	v2 realpos = (v2)pos * 2.0f - (v2)pixelScreenSize + (v2)pixelSize;
 	// scale to 0-1
 	realpos = v2(realpos.x / pixelScreenSize.x, realpos.y / pixelScreenSize.y);
-
-	float quad[18]{};
+	
+	float quad[30]{};
 	for (int i = 0; i < 6; i++)
 	{
-		quad[i * 3] = blitQuadData[i].x * realscale.x + realpos.x;
-		quad[i * 3 + 1] = blitQuadData[i].y * realscale.y + realpos.y;
-		quad[i * 3 + 2] = 0.0f;
+		// simple rotation
+		float sangle = sinf(rotation);
+		float cangle = cosf(rotation);
+
+		v2 quadData = v2(
+			cangle * blitQuadData[i].x - sangle * blitQuadData[i].y,
+			sangle * blitQuadData[i].x + cangle * blitQuadData[i].y
+		);
+		
+		quad[i * 5] = quadData.x * realscale.x + realpos.x;
+		quad[i * 5 + 1] = quadData.y * realscale.y + realpos.y;
+		quad[i * 5 + 2] = 0.0f;
+		quad[i * 5 + 3] = blitQuadData[i].z;
+		quad[i * 5 + 4] = blitQuadData[i].w;
 	}
 
 	// Use the shader
 	blitMat->SetVector4("tint", tint);
-
+	
 	glBindTexture(GL_TEXTURE_2D, src);
 
 	// 1rst attribute buffer : vertices
-	blitVB->SetData(quad, sizeof(float) * 18, VertexBuffer::UsageHint::StreamDraw);
+	blitVB->SetData(quad, sizeof(float) * 30, VertexBuffer::UsageHint::StreamDraw);
 
 	// Draw the triangles !
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-}
-
-void SpriteRenderer::SetPos(v2 position)
-{
-	//pos = position;
-	std::cerr << "unimplemented! dont use SetPos on SpriteRenderer!" << std::endl;
 }
 
 // top left
@@ -148,8 +153,18 @@ void SpriteRenderer::SetScale(v2 scale)
 	this->scale = scale;
 }
 
-void SpriteRenderer::SetPixelSizing(v2i size)
+void SpriteRenderer::SetRotation(float degrees)
 {
+	rotation = degrees * 0.01745329251f; // / 360 * 2pi
+	tileRot = (int)degrees / 90;
+	if (degrees - (float)tileRot * 90.0f != 0.0f)
+		tileRot = -1;
+}
+
+void SpriteRenderer::SetRotation(int tileRotation)
+{
+	tileRot = tileRotation;
+	rotation = tileRotation * 90.0f * 0.01745329251f;
 }
 
 // weird one-unit bubble sort kinda
@@ -210,11 +225,13 @@ void SpriteRenderer::RenderAll(RenderTexture* dest)
 	blitVB->Bind();
 	blitVA->Bind();
 	blitVA->EnableAttribute(0);
+	blitVA->EnableAttribute(1);
 
 	for (SpriteRenderer* r : renderers)
 		r->Render(target);
 
 	blitVA->DisableAttribute(0);
+	blitVA->DisableAttribute(1);
 }
 
 void SpriteRenderer::Initialise()
@@ -224,10 +241,13 @@ void SpriteRenderer::Initialise()
 	blitVA = new VertexArray();
 	blitVA->Construct();
 	blitVA->EnableAttribute(0);
-	blitVA->FormatAttribute(0, 3, GL_FLOAT, false, 0, 0);
+	blitVA->EnableAttribute(1);
+	blitVA->FormatAttribute(0, 3, GL_FLOAT, false, sizeof(float) * 5, 0);
+	blitVA->FormatAttribute(1, 2, GL_FLOAT, false, sizeof(float) * 5, (void*)(3 * sizeof(float)));
 	blitVA->DisableAttribute(0);
+	blitVA->DisableAttribute(1);
 	// Create and compile our GLSL program from the shaders
-	blitShader = new Shader("res/shaders/Blit.shader");
+	blitShader = new Shader("res/shaders/SpriteRenderer.shader");
 	blitMat = new Material(*blitShader);
 }
 

@@ -84,13 +84,13 @@ bool Engine::CreateWindow(const v2i& windowSize, const std::string& name)
 
 void Engine::Initialize()
 {
-    Input::EnableInput(window);
-
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     io = &ImGui::GetIO();
     io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+
+    Input::EnableInput(window, io);
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
