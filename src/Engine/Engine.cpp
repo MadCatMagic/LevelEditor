@@ -100,7 +100,7 @@ void Engine::Initialize()
     ImGui_ImplOpenGL3_Init("#version 130");
 
     // actual stuff
-    level = new Level(v2i(4, 3));
+    level = new Level(v2i(1, 1));
     editor.Initialize(level, winSize);
 }
 

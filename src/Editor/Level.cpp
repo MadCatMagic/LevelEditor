@@ -1,20 +1,5 @@
 #include "Editor/Level.h"
 
-// https://en.cppreference.com/w/cpp/container/unordered_map/unordered_map
-namespace v2iHash
-{
-	std::size_t KeyHash::operator()(const v2i& k) const
-	{
-		return std::hash<int>()(k.x) ^
-			(std::hash<int>()(k.y) << 1);
-	}
-
-	bool KeyEqual::operator()(const v2i& lhs, const v2i& rhs) const
-	{
-		return lhs.x == rhs.x && lhs.y == rhs.y;
-	}
-}
-
 Level::Level(const v2i& chunkDimensions)
 {
 	this->dimensions = chunkDimensions * TILE_CHUNK_SIZE;

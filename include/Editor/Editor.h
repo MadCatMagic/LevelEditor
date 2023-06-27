@@ -3,6 +3,8 @@
 #include <vector>
 #include "GeometryTool.h"
 
+#include "Compiler/FileManager.h"
+
 class Editor
 {
 public:
@@ -45,6 +47,6 @@ private:
 	int selectedTool = 0;
 	
 	// testing
-	std::vector<v2> compiledGeometry;
+	std::vector<ColliderSegment> compiledGeometry;
 };
 

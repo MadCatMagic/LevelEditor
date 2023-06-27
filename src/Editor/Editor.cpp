@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include "Editor/EditorGizmos.h"
-#include "Compiler/FileManager.h"
+//#include "Compiler/FileManager.h"
 
 Editor::Editor()
 {
@@ -120,9 +120,21 @@ void Editor::Render(RenderTexture* target)
 
     // testing
     EditorGizmos::SetColour(v4(1.0f, 0.0f, 0.0f, 0.5f));
-    for (int i = 0; i < compiledGeometry.size(); i += 2)
+    float col1 = 0.0f;
+    float col2 = 0.0f;
+    for each (const ColliderSegment& segment in compiledGeometry)
     {
-        EditorGizmos::DrawLine(compiledGeometry[i], compiledGeometry[i + 1], 2.0f);
+        col1 += 0.25f;
+        if (col1 > 1.0f)
+        {
+            col1 = 0.0f;
+            col2 += 0.25f;
+            if (col2 > 1.0f)
+                col2 = 0.0f;
+        }
+        EditorGizmos::SetColour(v4(1.0f, col1, col2, 1.0f));
+        for (int i = 0; i < (int)segment.vec.size() - 1; i++)
+            EditorGizmos::DrawLine(segment.vec[i], segment.vec[i + 1], 4.0f);
     }
 }
 

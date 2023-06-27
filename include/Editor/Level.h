@@ -17,16 +17,6 @@ struct TileChunk
 	v2i chunkPos{};
 };
 
-namespace v2iHash
-{
-	struct KeyHash {
-		std::size_t operator()(const v2i& k) const;
-	};
-	struct KeyEqual {
-		bool operator()(const v2i& lhs, const v2i& rhs) const;
-	};
-}
-
 class Level
 {
 public:
@@ -47,6 +37,6 @@ private:
 	void CreateChunk(TileChunk* chunk);
 
 	std::vector<TileChunk*> chunks;
-	std::unordered_map<v2i, int, v2iHash::KeyHash, v2iHash::KeyEqual> chunkMap;
+	std::unordered_map<v2i, int, vecHash::KeyHash<v2i, int>, vecHash::KeyEqual<v2i>> chunkMap;
 };
 

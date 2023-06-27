@@ -210,3 +210,25 @@ struct v4i
 	static v4i zero;
 	static v4i one;
 };
+
+
+// vector hashing operations for use with unordered_map/unordered_set
+// https://en.cppreference.com/w/cpp/container/unordered_map/unordered_map
+namespace vecHash
+{
+	template<class vec, class vecType>
+	struct KeyHash {
+		inline std::size_t operator()(const vec& k) const
+		{
+			return std::hash<vecType>()(k.x) ^
+				(std::hash<vecType>()(k.y) << 1);
+		};
+	};
+	template<class vec>
+	struct KeyEqual {
+		inline bool operator()(const vec& lhs, const vec& rhs) const
+		{
+			return lhs == rhs;
+		};
+	};
+}
