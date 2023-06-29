@@ -122,7 +122,7 @@ void Editor::Render(RenderTexture* target)
     EditorGizmos::SetColour(v4(1.0f, 0.0f, 0.0f, 0.5f));
     float col1 = 0.0f;
     float col2 = 0.0f;
-    for each (const ColliderSegment& segment in compiledGeometry)
+    for each (const ColliderSegment & segment in compiledGeometry)
     {
         col1 += 0.25f;
         if (col1 > 1.0f)
@@ -132,9 +132,10 @@ void Editor::Render(RenderTexture* target)
             if (col2 > 1.0f)
                 col2 = 0.0f;
         }
+
         EditorGizmos::SetColour(v4(1.0f, col1, col2, 1.0f));
         for (int i = 0; i < (int)segment.vec.size() - 1; i++)
-            EditorGizmos::DrawLine(segment.vec[i], segment.vec[i + 1], 4.0f);
+            EditorGizmos::DrawLine(segment.vec[i], segment.vec[i + 1], 5.0f);
     }
 }
 
