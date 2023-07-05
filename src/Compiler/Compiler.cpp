@@ -115,14 +115,14 @@ std::vector<ColliderSegment> Compiler::CompileGeometry()
         //    continue;
 
         // skip if both vertices already satisfied
-        if (seenPoints[pairs[i]] >= pointMap[pairs[i]].size() / 2 && seenPoints[pairs[i + 1]] >= pointMap[pairs[i + 1]].size() / 2)
+        if (seenPoints[pairs[i]] >= (int)pointMap[pairs[i]].size() / 2 && seenPoints[pairs[i + 1]] >= (int)pointMap[pairs[i + 1]].size() / 2)
             continue;
 
         // expensive but necessary?
         bool skip = false;
         for each (const ColliderSegment & segment in segments)
         {
-            for (int j = 0; j < segment.vec.size() - 1; j++)
+            for (int j = 0; j < (int)segment.vec.size() - 1; j++)
             {
                 if ((pairs[i] == segment.vec[j] &&
                     pairs[i + 1] == segment.vec[j + 1]) ||
@@ -139,9 +139,9 @@ std::vector<ColliderSegment> Compiler::CompileGeometry()
         int forwards = i + 1;
         int backwards = i;
 
-        if (seenPoints[pairs[backwards]] < pointMap[pairs[backwards]].size() / 2)
+        if (seenPoints[pairs[backwards]] < (int)pointMap[pairs[backwards]].size() / 2)
             seenPoints[pairs[backwards]] += 1;
-        if (seenPoints[pairs[forwards]] < pointMap[pairs[forwards]].size() / 2)
+        if (seenPoints[pairs[forwards]] < (int)pointMap[pairs[forwards]].size() / 2)
             seenPoints[pairs[forwards]] += 1;
 
         // if forward has this condition then backward wont and vice versa
@@ -184,13 +184,14 @@ std::vector<ColliderSegment> Compiler::CompileGeometry()
             }
 
             // replaced by function
+            int prevForwards = forwards;
             forwards = StepThroughGeometry(forwards, forwardsIsRhsSolid);
 
             // need to do two checks for circularity:
             // one after the first step in order to check for an odd-numbered edge loop
             // one after the second step to check for an even-numbered loop
             // check 1:
-            if ((forwards / 2) == (backwards / 2))
+            if ((forwards / 2) == (backwards / 2) && forwards != prevForwards) // only do check if forwards changed
             {
                 segment.isLoop = true;
                 segment.vec.push_back(pairs[forwards]);

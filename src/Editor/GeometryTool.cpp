@@ -19,11 +19,20 @@ unsigned int GeometryTool::GetTextureID() const
 	return sprite->GetID();
 }
 
-void DrawGeometryTool::OnHoldClick(bool shift, bool ctrl, const v2i& pos)
+void GeometryTool::SetSolidity(const v2i& pos, bool isSolid)
 {
 	TileData* t = level->GetTile(pos);
 	if (t != nullptr)
-		t->solid = shift;
+	{
+		if (t->solid != isSolid)
+			t->slant = 0;
+		t->solid = isSolid;
+	}
+}
+
+void DrawGeometryTool::OnHoldClick(bool shift, bool ctrl, const v2i& pos)
+{
+	SetSolidity(pos, shift);
 }
 
 void BoxGeometryTool::OnClick(bool shift, bool ctrl, const v2i& pos)
@@ -64,11 +73,7 @@ void BoxGeometryTool::OnReleaseClick(bool shift, bool ctrl, const v2i& pos)
 		for (int i = bottomLeft.x; i <= topRight.x; i++)
 			for (int j = bottomLeft.y; j <= topRight.y; j++)
 			{
-				TileData* t = level->GetTile(v2i(i, j));
-				if (t == nullptr)
-					continue;
-
-				t->solid = shift;
+				SetSolidity(v2i(i, j), solid);
 			}
 	}
 }
@@ -76,6 +81,6 @@ void BoxGeometryTool::OnReleaseClick(bool shift, bool ctrl, const v2i& pos)
 void RotateGeometryTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 {
 	TileData* t = level->GetTile(pos);
-	if (t != nullptr)
+	if (t != nullptr && t->solid)
 		t->slant = (t->slant + 1 - 2 * shift) % 5;
 }

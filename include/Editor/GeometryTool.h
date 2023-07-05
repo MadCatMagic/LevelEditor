@@ -17,6 +17,8 @@ public:
 	inline void SetLevel(Level* l) { level = l; }
 
 protected:
+	void SetSolidity(const v2i& pos, bool isSolid);
+
 	Level* level;
 
 private:
