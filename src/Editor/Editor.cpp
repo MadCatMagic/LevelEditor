@@ -37,7 +37,7 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
 
     winSize = windowSize;
     whiteTex = new Texture2D("res/white.png");
-    slantTex = new Texture2D("res/slant.png");
+    slantTex = new Texture2D("res/slantcol.png");
     slantTex->sampling = Texture::Sampling::Nearest;
     slantTex->ApplyFiltering();
 

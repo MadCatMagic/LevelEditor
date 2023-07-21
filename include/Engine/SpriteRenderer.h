@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine/Texture.h"
 #include <vector>
+#include <unordered_map>
 
 class SpriteRenderer
 {
@@ -21,6 +22,9 @@ public:
 
 	void SetLayer(int l);
 
+	unsigned int GetTextureID() const;
+	v2i GetTextureSize() const;
+
 	static void RenderAll(RenderTexture* dest);
 	static void Initialise();
 	static void Release();
@@ -31,7 +35,9 @@ public:
 	bool render;
 
 private:
-	void Render(unsigned int target);
+	void Render(); // returns textureid
+	
+	static int RenderLayer(int startingIndex);
 
 	// cannot be both at once
 	Texture2D* tex2D = nullptr;
@@ -46,6 +52,9 @@ private:
 	// radians
 	float rotation = 0.0f;
 	int tileRot = -1;
+
+	// instancing
+	static std::unordered_map<int, std::vector<float>> instancedData;
 
 	static std::vector<SpriteRenderer*> renderers;
 };

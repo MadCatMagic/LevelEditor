@@ -9,19 +9,22 @@
 #include <iostream>
 
 // render stuff, xy are positions, zw are tex coords
-static const v4 blitQuadData[6] = {
-	v4(-1.0f, -1.0f, 0.0f, 1.0f),
-	v4( 1.0f, -1.0f, 1.0f, 1.0f),
-	v4(-1.0f,  1.0f, 0.0f, 0.0f),
-	v4(-1.0f,  1.0f, 0.0f, 0.0f),
-	v4( 1.0f, -1.0f, 1.0f, 1.0f),
-	v4( 1.0f,  1.0f, 1.0f, 0.0f),
+static const float blitQuadData[24] = {
+	-1.0f, -1.0f, 0.0f, 1.0f,
+	 1.0f, -1.0f, 1.0f, 1.0f,
+	-1.0f,  1.0f, 0.0f, 0.0f,
+	-1.0f,  1.0f, 0.0f, 0.0f,
+	 1.0f, -1.0f, 1.0f, 1.0f,
+	 1.0f,  1.0f, 1.0f, 0.0f,
 };
 
 static VertexBuffer* blitVB;
 static VertexArray* blitVA;
+static VertexBuffer* blitInstancingVB;
 static Shader* blitShader;
 static Material* blitMat;
+
+std::unordered_map<int, std::vector<float>> SpriteRenderer::instancedData = std::unordered_map<int, std::vector<float>>();
 
 // things to be drawn first are at the front with the highest layer value
 std::vector<SpriteRenderer*> SpriteRenderer::renderers = std::vector<SpriteRenderer*>();
@@ -84,25 +87,13 @@ void SpriteRenderer::Clear()
 	pixelSize = v2i();
 }
 
-void SpriteRenderer::Render(unsigned int target)
+void SpriteRenderer::Render()
 {
-	if (!render)
+	if (!render || (tex2D == nullptr && rt == nullptr))
 		return;
 
-	unsigned int src;
-	v2i dimensions;
-	if (rt != nullptr)
-	{
-		src = rt->colourBuffer->GetID();
-		dimensions = v2i(rt->width, rt->height);
-	}
-	else if (tex2D != nullptr)
-	{
-		src = tex2D->GetID();
-		dimensions = v2i(tex2D->width, tex2D->height);
-	}
-	else
-		return;
+	unsigned int src = GetTextureID();
+	v2i dimensions = GetTextureSize();
 	
 	v2 realscale = v2::Scale(v2((float)dimensions.x / (float)pixelScreenSize.x, (float)dimensions.y / (float)pixelScreenSize.y), scale);
 
@@ -110,36 +101,18 @@ void SpriteRenderer::Render(unsigned int target)
 	v2 realpos = (v2)pos * 2.0f - (v2)pixelScreenSize + (v2)pixelSize;
 	// scale to 0-1
 	realpos = v2(realpos.x / pixelScreenSize.x, realpos.y / pixelScreenSize.y);
-	
-	float quad[30]{};
-	for (int i = 0; i < 6; i++)
-	{
-		// simple rotation
-		float sangle = sinf(rotation);
-		float cangle = cosf(rotation);
 
-		v2 quadData = v2(
-			cangle * blitQuadData[i].x - sangle * blitQuadData[i].y,
-			sangle * blitQuadData[i].x + cangle * blitQuadData[i].y
-		);
-		
-		quad[i * 5] = quadData.x * realscale.x + realpos.x;
-		quad[i * 5 + 1] = quadData.y * realscale.y + realpos.y;
-		quad[i * 5 + 2] = 0.0f;
-		quad[i * 5 + 3] = blitQuadData[i].z;
-		quad[i * 5 + 4] = blitQuadData[i].w;
-	}
+	instancedData[src].push_back(realpos.x);
+	instancedData[src].push_back(realpos.y);
 
-	// Use the shader
-	blitMat->SetVector4("tint", tint);
-	
-	glBindTexture(GL_TEXTURE_2D, src);
+	instancedData[src].push_back(realscale.x);
+	instancedData[src].push_back(realscale.y);
+	instancedData[src].push_back(rotation);
 
-	// 1rst attribute buffer : vertices
-	blitVB->SetData(quad, sizeof(float) * 30, VertexBuffer::UsageHint::StreamDraw);
-
-	// Draw the triangles !
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	instancedData[src].push_back(tint.x);
+	instancedData[src].push_back(tint.y);
+	instancedData[src].push_back(tint.z);
+	instancedData[src].push_back(tint.w);
 }
 
 // top left
@@ -203,6 +176,24 @@ void SpriteRenderer::SetLayer(int l)
 	}
 }
 
+unsigned int SpriteRenderer::GetTextureID() const
+{
+	if (rt != nullptr)
+		return rt->colourBuffer->GetID();
+	else if (tex2D != nullptr)
+		return tex2D->GetID();
+	return -1;
+}
+
+v2i SpriteRenderer::GetTextureSize() const
+{
+	if (rt != nullptr)
+		return v2i(rt->width, rt->height);
+	else if (tex2D != nullptr)
+		return v2i(tex2D->width, tex2D->height);
+	return v2i::zero;
+}
+
 void SpriteRenderer::RenderAll(RenderTexture* dest)
 {
 	unsigned int target;
@@ -217,35 +208,65 @@ void SpriteRenderer::RenderAll(RenderTexture* dest)
 
 	// moved lots of blit calls outside of the render function
 	blitMat->Bind();
-	// Bind our texture in Texture Unit 0
-	glActiveTexture(GL_TEXTURE0);
 	// Set our "renderedTexture" sampler to use Texture Unit 0
+	glActiveTexture(GL_TEXTURE0);
 	blitMat->SetTexture("blitTexture", 0);
 
 	blitVB->Bind();
 	blitVA->Bind();
-	blitVA->EnableAttribute(0);
-	blitVA->EnableAttribute(1);
 
-	for (SpriteRenderer* r : renderers)
-		r->Render(target);
+	int currentIndex = 0;
+	while (currentIndex < (int)renderers.size())
+		currentIndex = RenderLayer(currentIndex);
+}
 
-	blitVA->DisableAttribute(0);
-	blitVA->DisableAttribute(1);
+int SpriteRenderer::RenderLayer(int startingIndex)
+{
+	instancedData.clear();
+
+	int i = startingIndex;
+	int currentLayer = renderers[i]->layer;
+	while (i < (int)renderers.size() && currentLayer == renderers[i]->layer)
+	{
+		renderers[i]->Render();
+		i++;
+	}
+
+	for each (const std::pair<int, std::vector<float>>& pair in instancedData)
+	{
+		glBindTexture(GL_TEXTURE_2D, pair.first);
+		blitInstancingVB->SetData((const void*)pair.second.data(), sizeof(float) * pair.second.size(), VertexBuffer::UsageHint::StaticDraw);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, pair.second.size() / 9);
+	}
+
+	return i;
 }
 
 void SpriteRenderer::Initialise()
 {
 	// setup blit stuff
-	blitVB = new VertexBuffer(nullptr, 0);
+	blitVB = new VertexBuffer(blitQuadData, sizeof(float) * 24);
+	blitInstancingVB = new VertexBuffer(nullptr, 0);
 	blitVA = new VertexArray();
 	blitVA->Construct();
+	// basic data
 	blitVA->EnableAttribute(0);
 	blitVA->EnableAttribute(1);
-	blitVA->FormatAttribute(0, 3, GL_FLOAT, false, sizeof(float) * 5, 0);
-	blitVA->FormatAttribute(1, 2, GL_FLOAT, false, sizeof(float) * 5, (void*)(3 * sizeof(float)));
-	blitVA->DisableAttribute(0);
-	blitVA->DisableAttribute(1);
+	blitVB->Bind();
+	blitVA->FormatAttribute(0, 2, GL_FLOAT, false, sizeof(float) * 4, 0);
+	blitVA->FormatAttribute(1, 2, GL_FLOAT, false, sizeof(float) * 4, (void*)(2 * sizeof(float)));
+	// instanced stuff
+	blitVA->EnableAttribute(2);
+	blitVA->EnableAttribute(3);
+	blitVA->EnableAttribute(4);
+	blitInstancingVB->Bind();
+	blitVA->FormatAttribute(2, 2, GL_FLOAT, false, sizeof(float) * 9, 0);							// (pos.x, pos.y)
+	blitVA->FormatAttribute(3, 3, GL_FLOAT, false, sizeof(float) * 9, (void*)(2 * sizeof(float)));	// (scale.x, scale.y, rotation)
+	blitVA->FormatAttribute(4, 4, GL_FLOAT, false, sizeof(float) * 9, (void*)(5 * sizeof(float)));	// (tint.r, tint.g, tint.b, tint.a)
+	glVertexAttribDivisor(2, 1);
+	glVertexAttribDivisor(3, 1);
+	glVertexAttribDivisor(4, 1);
+	
 	// Create and compile our GLSL program from the shaders
 	blitShader = new Shader("res/shaders/SpriteRenderer.shader");
 	blitMat = new Material(*blitShader);
@@ -255,6 +276,7 @@ void SpriteRenderer::Release()
 {
 	delete blitVB;
 	delete blitVA;
+	delete blitInstancingVB;
 	delete blitShader;
 	delete blitMat;
 }
