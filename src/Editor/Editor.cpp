@@ -103,7 +103,7 @@ void Editor::Render(RenderTexture* target)
             spriteRenderers[i].SetScale(viewerScale);
 
             // ensure it renders properly
-            auto tile = level->GetTile(v2i(x, y));
+            auto tile = level->GetTile(v2i(x, y), 0);
             if (tile->solid)
                 spriteRenderers[i].render = true;
             else
@@ -196,7 +196,7 @@ void Editor::RenderUI(ImGuiIO* io)
     if (ImGui::Button("test exporter"))
     {
         Compiler c = Compiler(level);
-        compiledGeometry = c.CompileGeometry();
+        compiledGeometry = c.CompileGeometry(0);
     }
 
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);

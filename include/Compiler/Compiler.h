@@ -16,7 +16,7 @@ public:
 	Compiler(class Level* target);
 
 	std::string ExportLevel(const std::string& filename);
-	std::vector<ColliderSegment> CompileGeometry();
+	std::vector<ColliderSegment> CompileGeometry(int layer);
 
 private:
 	std::vector<v2> pairs;

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "level-editor",
+  "version-string": "0.0.1",
+  "dependencies": [
+    "glfw3",
+    "glew",
+    "stb",
+    {
+      "name": "imgui",
+      "features": [ "glfw-binding", "opengl3-binding" ]
+    }
+  ]
+}

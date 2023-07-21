@@ -23,13 +23,13 @@ Level::~Level()
 	//delete[] tileData;
 }
 
-TileData* Level::GetTile(const v2i& pos)
+TileData* Level::GetTile(const v2i& pos, int layer)
 {
 	if (ValidPosition(pos))
 	{
 		int chunkIndex = chunkMap[v2i(pos.x / TILE_CHUNK_SIZE, pos.y / TILE_CHUNK_SIZE)];
 		v2i correctPos = v2i(pos.x % TILE_CHUNK_SIZE, pos.y % TILE_CHUNK_SIZE);
-		return &(chunks[chunkIndex]->tiles[correctPos.x][correctPos.y]);
+		return &(chunks[chunkIndex]->tiles[layer][correctPos.x][correctPos.y]);
 	}
 	return nullptr;
 }

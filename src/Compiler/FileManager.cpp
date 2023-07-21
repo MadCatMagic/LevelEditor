@@ -21,12 +21,13 @@ void FileManager::SaveLevel(Level* level, const std::string& filename)
     {
         stream << "c#" << std::to_string(c->chunkPos.x) << "," << std::to_string(c->chunkPos.y) << "#";
 
-        for (int y = 0; y < TILE_CHUNK_SIZE; y++)
-            for (int x = 0; x < TILE_CHUNK_SIZE; x++)
-            {
-                TileData& t = c->tiles[x][y];
-                stream << std::to_string(t.solid) << std::to_string(t.slant) << ",";
-            }
+        for (int layer = 0; layer < TILE_CHUNK_LAYERS; layer++)
+            for (int y = 0; y < TILE_CHUNK_SIZE; y++)
+                for (int x = 0; x < TILE_CHUNK_SIZE; x++)
+                {
+                    TileData& t = c->tiles[layer][x][y];
+                    stream << std::to_string(t.solid) << std::to_string(t.slant) << ",";
+                }
     }
 
     std::ofstream writeStream = std::ofstream("levels/" + filename + ".lvl", std::ios::out | std::ios::trunc);
@@ -47,6 +48,7 @@ Level* FileManager::LoadLevel(const std::string& filename)
 
     bool readingChunkPos = false;
     int tileIndex = 0;
+    int layer = 0;
     int tileScanProgress = 0;
 
     std::string chunkPos;
@@ -75,6 +77,7 @@ Level* FileManager::LoadLevel(const std::string& filename)
             chunk = new TileChunk();
             chunkPos = "";
             tileIndex = 0;
+            layer = 0;
         }
         else if (readingChunkPos)
         {
@@ -106,7 +109,12 @@ Level* FileManager::LoadLevel(const std::string& filename)
             if (c == ',')
             {
                 // reset and increment index
-                tileIndex += 1;
+                tileIndex++;
+                if (tileIndex == TILE_CHUNK_SIZE * TILE_CHUNK_SIZE)
+                {
+                    tileIndex = 0;
+                    layer++;
+                }
                 tileScanProgress = 0;
                 
                 continue;
@@ -116,10 +124,10 @@ Level* FileManager::LoadLevel(const std::string& filename)
             v2i pos = v2i(tileIndex % TILE_CHUNK_SIZE, tileIndex / TILE_CHUNK_SIZE);
 
             if (tileScanProgress == 0) // solid
-                chunk->tiles[pos.x][pos.y].solid = c == '1';
+                chunk->tiles[layer][pos.x][pos.y].solid = c == '1';
 
             else if (tileScanProgress == 1) // slant
-                chunk->tiles[pos.x][pos.y].slant = c - '0';
+                chunk->tiles[layer][pos.x][pos.y].slant = c - '0';
 
             tileScanProgress += 1;
         }

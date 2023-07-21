@@ -21,7 +21,7 @@ unsigned int GeometryTool::GetTextureID() const
 
 void GeometryTool::SetSolidity(const v2i& pos, bool isSolid)
 {
-	TileData* t = level->GetTile(pos);
+	TileData* t = level->GetTile(pos, 0);
 	if (t != nullptr)
 	{
 		if (t->solid != isSolid)
@@ -80,7 +80,7 @@ void BoxGeometryTool::OnReleaseClick(bool shift, bool ctrl, const v2i& pos)
 
 void RotateGeometryTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 {
-	TileData* t = level->GetTile(pos);
+	TileData* t = level->GetTile(pos, 0);
 	if (t != nullptr && t->solid)
 		t->slant = (t->slant + 1 - 2 * shift) % 5;
 }

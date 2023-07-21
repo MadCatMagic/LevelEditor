@@ -11,9 +11,15 @@ struct TileData
 
 // 16 x 16
 constexpr int TILE_CHUNK_SIZE = 16;
+constexpr int TILE_CHUNK_LAYERS = 4;
 struct TileChunk
 {
-	TileData tiles[16][16]{};
+	// there are 4 layers
+	// 0: playable space
+	// 1: close background
+	// 2: far background
+	// 3: further background
+	TileData tiles[TILE_CHUNK_LAYERS][TILE_CHUNK_SIZE][TILE_CHUNK_SIZE]{};
 	v2i chunkPos{};
 };
 
@@ -26,7 +32,7 @@ public:
 	Level(const v2i& chunkDimensions);
 	~Level();
 
-	TileData* GetTile(const v2i& pos);
+	TileData* GetTile(const v2i& pos, int layer);
 
 	v2i dimensions;
 

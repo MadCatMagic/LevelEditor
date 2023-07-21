@@ -8,7 +8,7 @@ Compiler::Compiler(Level* target)
     level = target;
 }
 
-std::vector<ColliderSegment> Compiler::CompileGeometry()
+std::vector<ColliderSegment> Compiler::CompileGeometry(int layer)
 {
     pairs.clear();
 
@@ -17,7 +17,7 @@ std::vector<ColliderSegment> Compiler::CompileGeometry()
         {
             // work out what collision this particular tile should have
             v2i pos = v2i(x, y);
-            TileData* t = level->GetTile(pos);
+            TileData* t = level->GetTile(pos, layer);
             if (t == nullptr)
                 continue;
 
@@ -32,7 +32,7 @@ std::vector<ColliderSegment> Compiler::CompileGeometry()
             bool air[4]{false, false, false, false}; // initialized to false by default
             for (int i = 0; i < 4; i++)
             {
-                TileData* neighbour = level->GetTile(pos + directions[i]);
+                TileData* neighbour = level->GetTile(pos + directions[i], layer);
                 if (neighbour == nullptr)
                     continue;
 
