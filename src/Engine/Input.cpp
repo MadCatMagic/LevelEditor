@@ -5,6 +5,8 @@
 
 #include "imgui.h"
 
+#include "tracy/Tracy.hpp"
+
 namespace Input
 {
 	GLFWwindow* window = nullptr;
@@ -150,6 +152,7 @@ namespace Input
 
 	void InputUpdate()
 	{
+		ZoneScoped;
 		// cursor difference to last frame
 		if (previousCursorPosX != -1.0)
 		{

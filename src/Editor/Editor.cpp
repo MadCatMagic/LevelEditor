@@ -10,6 +10,8 @@
 #include "Editor/EditorGizmos.h"
 //#include "Compiler/FileManager.h"
 
+#include "tracy/Tracy.hpp"
+
 Editor::Editor()
 {
 }
@@ -54,6 +56,8 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
 
 void Editor::Update()
 {
+    ZoneScoped;
+
     // translate back from screen space to tile space
     v2 pixelPos = v2(Input::cursorPosX, winSize.y - Input::cursorPosY);
     v2 pos = PixelToWorld(pixelPos);
@@ -93,6 +97,7 @@ void Editor::Update()
 
 void Editor::Render(RenderTexture* target)
 {
+    ZoneScoped;
     for (int x = 0; x < level->dimensions.x; x++)
         for (int y = 0; y < level->dimensions.y; y++)
         {
@@ -141,6 +146,7 @@ void Editor::Render(RenderTexture* target)
 
 void Editor::RenderUI(ImGuiIO* io)
 {
+    ZoneScoped;
     ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
     ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too

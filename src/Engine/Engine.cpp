@@ -36,6 +36,7 @@ void Engine::Mainloop(bool debugging)
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
+        FrameMark;
 
         glfwPollEvents();
     }
@@ -50,6 +51,8 @@ void Engine::Mainloop(bool debugging)
 
 bool Engine::CreateWindow(const v2i& windowSize, const std::string& name)
 {
+    ZoneScoped;
+
     this->winSize = windowSize;
     winProportions = v2((float)winSize.x / (float)winSize.y, 1.0f);
 
@@ -84,6 +87,8 @@ bool Engine::CreateWindow(const v2i& windowSize, const std::string& name)
 
 void Engine::Initialize()
 {
+    ZoneScoped;
+
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -100,12 +105,14 @@ void Engine::Initialize()
     ImGui_ImplOpenGL3_Init("#version 130");
 
     // actual stuff
-    level = new Level(v2i(1, 1));
+    level = new Level(v2i(4, 3));
     editor.Initialize(level, winSize);
 }
 
 void Engine::Update()
 {
+    ZoneScoped;
+
     // actual stuff first
     editor.Update();
     editor.Render(0);

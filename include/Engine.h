@@ -6,6 +6,8 @@
 #include "Engine/Renderer.h"
 #include "Editor/Editor.h"
 
+#include "tracy/Tracy.hpp"
+
 class Engine
 {
 public:

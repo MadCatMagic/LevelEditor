@@ -38,6 +38,7 @@ private:
 	void Render(); // returns textureid
 	
 	static int RenderLayer(int startingIndex);
+	static int CollectInstances(int startingIndex);
 
 	// cannot be both at once
 	Texture2D* tex2D = nullptr;
@@ -53,8 +54,26 @@ private:
 	float rotation = 0.0f;
 	int tileRot = -1;
 
+	struct CustomHash {
+		inline auto operator()(int i) const -> size_t {
+			return i * 1245839;
+		}
+	};
+
+	// all instancing data put together here
+
+	struct InstanceData {
+		v2 realpos;
+		v2 realscale;
+		float rotation = 0.0f;
+		v4 tint;
+
+		inline InstanceData(const v2& p, const v2& s, float r, const v4& t) : realpos(p), realscale(s), rotation(r), tint(t) { }
+	};
+
 	// instancing
-	static std::unordered_map<int, std::vector<float>> instancedData;
+	static std::unordered_map<int, std::vector<InstanceData>, CustomHash> instancedData;
+	static std::unordered_map<int, int, CustomHash> numInstancesPerTex;
 
 	static std::vector<SpriteRenderer*> renderers;
 };

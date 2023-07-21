@@ -8,6 +8,8 @@
 
 #include <iostream>
 
+#include "tracy/Tracy.hpp"
+
 // render stuff, xy are positions, zw are tex coords
 static const float blitQuadData[24] = {
 	-1.0f, -1.0f, 0.0f, 1.0f,
@@ -24,7 +26,8 @@ static VertexBuffer* blitInstancingVB;
 static Shader* blitShader;
 static Material* blitMat;
 
-std::unordered_map<int, std::vector<float>> SpriteRenderer::instancedData = std::unordered_map<int, std::vector<float>>();
+std::unordered_map<int, std::vector<SpriteRenderer::InstanceData>, SpriteRenderer::CustomHash> SpriteRenderer::instancedData = std::unordered_map<int, std::vector<SpriteRenderer::InstanceData>, SpriteRenderer::CustomHash>();
+std::unordered_map<int, int, SpriteRenderer::CustomHash> SpriteRenderer::numInstancesPerTex = std::unordered_map<int, int, SpriteRenderer::CustomHash>();
 
 // things to be drawn first are at the front with the highest layer value
 std::vector<SpriteRenderer*> SpriteRenderer::renderers = std::vector<SpriteRenderer*>();
@@ -59,6 +62,8 @@ SpriteRenderer::SpriteRenderer(int drawlevel)
 // can do binary search but isnt as efficient for small lengths of vector especially for a one time operation
 SpriteRenderer::~SpriteRenderer()
 {
+	Clear();
+
 	for (unsigned int i = 0; i < renderers.size(); i++)
 	{
 		if (renderers[i] == this)
@@ -68,6 +73,8 @@ SpriteRenderer::~SpriteRenderer()
 
 void SpriteRenderer::SetTexture(Texture2D* tex)
 {
+	numInstancesPerTex[tex->GetID()] += 1;
+
 	tex2D = tex;
 	rt = nullptr;
 	pixelSize = v2i(tex->width, tex->height);
@@ -75,6 +82,8 @@ void SpriteRenderer::SetTexture(Texture2D* tex)
 
 void SpriteRenderer::SetTexture(RenderTexture* tex)
 {
+	numInstancesPerTex[tex->GetID()] += 1;
+
 	tex2D = nullptr;
 	rt = tex;
 	pixelSize = v2i(tex->width, tex->height);
@@ -82,6 +91,9 @@ void SpriteRenderer::SetTexture(RenderTexture* tex)
 
 void SpriteRenderer::Clear() 
 {
+	if (tex2D != nullptr || rt != nullptr)
+		numInstancesPerTex[GetTextureID()] -= 1;
+
 	tex2D = nullptr;
 	rt = nullptr;
 	pixelSize = v2i();
@@ -102,17 +114,9 @@ void SpriteRenderer::Render()
 	// scale to 0-1
 	realpos = v2(realpos.x / pixelScreenSize.x, realpos.y / pixelScreenSize.y);
 
-	instancedData[src].push_back(realpos.x);
-	instancedData[src].push_back(realpos.y);
+	InstanceData obj = InstanceData(realpos, realscale, rotation, tint);
 
-	instancedData[src].push_back(realscale.x);
-	instancedData[src].push_back(realscale.y);
-	instancedData[src].push_back(rotation);
-
-	instancedData[src].push_back(tint.x);
-	instancedData[src].push_back(tint.y);
-	instancedData[src].push_back(tint.z);
-	instancedData[src].push_back(tint.w);
+	instancedData[src].push_back(obj);
 }
 
 // top left
@@ -196,6 +200,8 @@ v2i SpriteRenderer::GetTextureSize() const
 
 void SpriteRenderer::RenderAll(RenderTexture* dest)
 {
+	ZoneScoped;
+
 	unsigned int target;
 	if (dest == nullptr)
 		target = 0;
@@ -222,7 +228,25 @@ void SpriteRenderer::RenderAll(RenderTexture* dest)
 
 int SpriteRenderer::RenderLayer(int startingIndex)
 {
-	instancedData.clear();
+	ZoneScoped;
+
+	int i = CollectInstances(startingIndex);
+
+	for each (const std::pair<int, std::vector<InstanceData>>& pair in instancedData)
+	{
+		glBindTexture(GL_TEXTURE_2D, pair.first);
+		blitInstancingVB->SetData((const void*)pair.second.data(), sizeof(InstanceData) * pair.second.size(), VertexBuffer::UsageHint::StaticDraw);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, pair.second.size());
+
+		instancedData[pair.first].clear();
+	}
+
+	return i;
+}
+
+int SpriteRenderer::CollectInstances(int startingIndex)
+{
+	ZoneScoped;
 
 	int i = startingIndex;
 	int currentLayer = renderers[i]->layer;
@@ -231,14 +255,6 @@ int SpriteRenderer::RenderLayer(int startingIndex)
 		renderers[i]->Render();
 		i++;
 	}
-
-	for each (const std::pair<int, std::vector<float>>& pair in instancedData)
-	{
-		glBindTexture(GL_TEXTURE_2D, pair.first);
-		blitInstancingVB->SetData((const void*)pair.second.data(), sizeof(float) * pair.second.size(), VertexBuffer::UsageHint::StaticDraw);
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, pair.second.size() / 9);
-	}
-
 	return i;
 }
 

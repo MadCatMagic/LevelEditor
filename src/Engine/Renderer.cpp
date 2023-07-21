@@ -11,6 +11,8 @@
 
 #include <iostream>
 
+#include "tracy/Tracy.hpp"
+
 namespace Renderer
 {
     static void APIENTRY GLErrorCall(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
@@ -115,6 +117,7 @@ namespace Renderer
 
     void Render()
     {
+        ZoneScoped;
         SpriteRenderer::pixelScreenSize = GetWinSize();
         SpriteRenderer::RenderAll(0);
     }
