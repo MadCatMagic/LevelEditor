@@ -27,7 +27,7 @@ static Shader* blitShader;
 static Material* blitMat;
 
 std::unordered_map<int, std::vector<SpriteRenderer::InstanceData>, SpriteRenderer::CustomHash> SpriteRenderer::instancedData = std::unordered_map<int, std::vector<SpriteRenderer::InstanceData>, SpriteRenderer::CustomHash>();
-std::unordered_map<int, int, SpriteRenderer::CustomHash> SpriteRenderer::numInstancesPerTex = std::unordered_map<int, int, SpriteRenderer::CustomHash>();
+//std::unordered_map<int, int, SpriteRenderer::CustomHash> SpriteRenderer::numInstancesPerTex = std::unordered_map<int, int, SpriteRenderer::CustomHash>();
 
 // things to be drawn first are at the front with the highest layer value
 std::vector<SpriteRenderer*> SpriteRenderer::renderers = std::vector<SpriteRenderer*>();
@@ -73,8 +73,6 @@ SpriteRenderer::~SpriteRenderer()
 
 void SpriteRenderer::SetTexture(Texture2D* tex)
 {
-	numInstancesPerTex[tex->GetID()] += 1;
-
 	tex2D = tex;
 	rt = nullptr;
 	pixelSize = v2i(tex->width, tex->height);
@@ -82,7 +80,7 @@ void SpriteRenderer::SetTexture(Texture2D* tex)
 
 void SpriteRenderer::SetTexture(RenderTexture* tex)
 {
-	numInstancesPerTex[tex->GetID()] += 1;
+	//numInstancesPerTex[tex->GetID()] += 1;
 
 	tex2D = nullptr;
 	rt = tex;
@@ -91,8 +89,8 @@ void SpriteRenderer::SetTexture(RenderTexture* tex)
 
 void SpriteRenderer::Clear() 
 {
-	if (tex2D != nullptr || rt != nullptr)
-		numInstancesPerTex[GetTextureID()] -= 1;
+	//if (tex2D != nullptr || rt != nullptr)
+	//	numInstancesPerTex[GetTextureID()] -= 1;
 
 	tex2D = nullptr;
 	rt = nullptr;

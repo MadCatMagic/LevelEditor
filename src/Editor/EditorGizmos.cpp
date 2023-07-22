@@ -42,11 +42,19 @@ namespace EditorGizmos
 
 	void DrawLine(const v2& startPos, const v2& endPos, float thickness)
 	{
+		GizmosLine obj;
+		obj.colour = colour;
+		obj.startPos = startPos;
+		obj.endPos = endPos;
+		obj.thickness = thickness;
+		gizmosToDraw.push_back(obj);
+	}
+
+	void DrawLineReal(const v2& startPos, const v2& endPos, float thickness)
+	{
 		glLineWidth(thickness);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 		// Use the shader
-		blitMat->Bind();
 		blitMat->SetVector4("tint", colour);
 
 		// create the vertex data
@@ -58,16 +66,28 @@ namespace EditorGizmos
 		};
 
 		// 1rst attribute buffer : vertices
-		blitVB->Bind();
 		blitVB->SetData(line, sizeof(float) * 6, VertexBuffer::UsageHint::StreamDraw);
-		blitVA->Bind();
-		blitVA->EnableAttribute(0);
 
 		// Draw the lines !
 		glDrawArrays(GL_LINES, 0, 2);
-		blitVA->DisableAttribute(0);
+	}
 
+	void DrawAllGizmos()
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		blitMat->Bind();
+		blitVB->Bind();
+		blitVA->Bind();
+		blitVA->EnableAttribute(0);
+		for each (auto & gizmo in gizmosToDraw)
+		{
+			colour = gizmo.colour;
+			DrawLineReal(gizmo.startPos, gizmo.endPos, gizmo.thickness);
+		}
+		blitVA->DisableAttribute(0);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		gizmosToDraw.clear();
 	}
 
 	void Release()

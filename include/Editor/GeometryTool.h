@@ -15,11 +15,13 @@ public:
 	unsigned int GetTextureID() const;
 
 	inline void SetLevel(Level* l) { level = l; }
+	inline void SetLayer(int l) { layer = l; }
 
 protected:
 	void SetSolidity(const v2i& pos, bool isSolid);
 
 	Level* level;
+	int layer;
 
 private:
 	class Texture2D* sprite;
@@ -55,4 +57,17 @@ public:
 	using GeometryTool::GeometryTool;
 	
 	void OnClick(bool shift, bool ctrl, const v2i& pos) override;
+};
+
+class LayerGeometryTool : public GeometryTool
+{
+public:
+	using GeometryTool::GeometryTool;
+
+	void OnClick(bool shift, bool ctrl, const v2i& pos) override;
+
+	inline int* GetCurrentLayer() { return &currentLayer; }
+
+private:
+	int currentLayer = 0;
 };

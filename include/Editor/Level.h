@@ -5,7 +5,7 @@
 
 struct TileData 
 {
-	bool solid = true;
+	bool solid = false;
 	int slant = 0;
 };
 
@@ -14,6 +14,7 @@ constexpr int TILE_CHUNK_SIZE = 16;
 constexpr int TILE_CHUNK_LAYERS = 4;
 struct TileChunk
 {
+	TileChunk();
 	// there are 4 layers
 	// 0: playable space
 	// 1: close background

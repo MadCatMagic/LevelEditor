@@ -51,3 +51,12 @@ void Level::CreateChunk(TileChunk* chunk)
 	chunks.push_back(chunk);
 	chunkMap.insert(std::make_pair(chunk->chunkPos, chunks.size() - 1));
 }
+
+TileChunk::TileChunk()
+{
+	for (int x = 0; x < TILE_CHUNK_SIZE; x++)
+		for (int y = 0; y < TILE_CHUNK_SIZE; y++)
+		{
+			tiles[0][x][y].solid = true;
+		}
+}

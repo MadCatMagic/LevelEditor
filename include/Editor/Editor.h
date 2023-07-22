@@ -25,7 +25,7 @@ public:
 
 private:
 	int GetIndex(const v2i& pos) const;
-	int GetIndex(int x, int y) const;
+	int GetIndex(int x, int y, int layer) const;
 
 	void ReloadLevel(Level* l);
 
@@ -45,6 +45,8 @@ private:
 	// editing tools
 	std::vector<GeometryTool*> tools;
 	int selectedTool = 0;
+
+	int* currentLayer = nullptr;
 	
 	// testing
 	std::vector<ColliderSegment> compiledGeometry;

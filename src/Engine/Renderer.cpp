@@ -8,6 +8,7 @@
 #include "Engine/Mesh/VertexBuffer.h"
 
 #include "Engine/SpriteRenderer.h"
+#include "Editor/EditorGizmos.h"
 
 #include <iostream>
 
@@ -120,6 +121,8 @@ namespace Renderer
         ZoneScoped;
         SpriteRenderer::pixelScreenSize = GetWinSize();
         SpriteRenderer::RenderAll(0);
+
+        EditorGizmos::DrawAllGizmos();
     }
 
     // blit stuff

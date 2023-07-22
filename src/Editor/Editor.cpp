@@ -39,7 +39,7 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
 
     winSize = windowSize;
     whiteTex = new Texture2D("res/white.png");
-    slantTex = new Texture2D("res/slantcol.png");
+    slantTex = new Texture2D("res/slant.png");
     slantTex->sampling = Texture::Sampling::Nearest;
     slantTex->ApplyFiltering();
 
@@ -47,6 +47,9 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
     tools.push_back(new DrawGeometryTool(target, "geometry_draw_icon.png"));
     tools.push_back(new BoxGeometryTool(target, "geometry_boxfill_icon.png"));
     tools.push_back(new RotateGeometryTool(target, "geometry_boxfill_icon.png")); // need to add icon
+    LayerGeometryTool* layerTool = new LayerGeometryTool(target, "geometry_boxfill_icon.png");
+    currentLayer = layerTool->GetCurrentLayer(); // maybe works
+    tools.push_back(layerTool); // need to add icon
 
     ReloadLevel(target);
 
@@ -63,6 +66,9 @@ void Editor::Update()
     v2 pos = PixelToWorld(pixelPos);
 
     // do tools stuff first
+    for each (auto & tool in tools)
+        tool->SetLayer(*currentLayer);
+
     bool shift = Input::GetKey(Input::Key::LSHIFT);
     bool ctrl = Input::GetKey(Input::Key::LCONTROL);
     if (Input::GetMouseButtonDown(0))
@@ -101,26 +107,35 @@ void Editor::Render(RenderTexture* target)
     for (int x = 0; x < level->dimensions.x; x++)
         for (int y = 0; y < level->dimensions.y; y++)
         {
-            // translate from tile space to pixel space
-            int i = GetIndex(x, y);
             v2 targetPos = WorldToPixel((v2)v2i(x, y));
-            spriteRenderers[i].SetPixelPos(targetPos);
-            spriteRenderers[i].SetScale(viewerScale);
-
-            // ensure it renders properly
-            auto tile = level->GetTile(v2i(x, y), 0);
-            if (tile->solid)
-                spriteRenderers[i].render = true;
-            else
-                spriteRenderers[i].render = false;
-
-            if (tile->slant != 0)
+            float vc = (x + y) % 2 == 0 ? 0.9f : 0.85f;
+            for (int l = 0; l < TILE_CHUNK_LAYERS; l++)
             {
-                spriteRenderers[i].SetRotation(tile->slant - 1);
-                spriteRenderers[i].SetTexture(slantTex);
+                // translate from tile space to pixel space
+                int i = GetIndex(x, y, l);
+                v2 targetPos = WorldToPixel((v2)v2i(x, y));
+                spriteRenderers[i].SetPixelPos(targetPos);
+                spriteRenderers[i].SetScale(viewerScale);
+
+                // make checkerboard pattern
+                float v = vc * (float)(TILE_CHUNK_LAYERS - abs(l - *currentLayer)) / (float)TILE_CHUNK_LAYERS;
+                spriteRenderers[i].tint = v4(v, v, v, 1.0f);
+
+                // ensure it renders properly
+                auto tile = level->GetTile(v2i(x, y), l);
+                if (tile->solid)
+                    spriteRenderers[i].render = true;
+                else
+                    spriteRenderers[i].render = false;
+
+                if (tile->slant != 0)
+                {
+                    spriteRenderers[i].SetRotation(tile->slant - 1);
+                    spriteRenderers[i].SetTexture(slantTex);
+                }
+                else
+                    spriteRenderers[i].SetTexture(whiteTex);
             }
-            else
-                spriteRenderers[i].SetTexture(whiteTex);
         }
 
     // testing
@@ -151,6 +166,7 @@ void Editor::RenderUI(ImGuiIO* io)
 
     ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too
     ImGui::Text(("viewerPosition: " + viewerPosition.ToString() + " viewerScale: " + viewerScale.ToString()).c_str());
+    ImGui::Text(("layer: " + std::to_string(*currentLayer)).c_str());
     //ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
     //ImGui::Checkbox("Another Window", &show_another_window);
 
@@ -231,12 +247,12 @@ v2 Editor::ScreenToPixel(const v2& p) const
 
 int Editor::GetIndex(const v2i& pos) const
 {
-    return pos.x + pos.y * level->dimensions.x;
+    return GetIndex(pos.x, pos.y, *currentLayer);
 }
 
-int Editor::GetIndex(int x, int y) const
+int Editor::GetIndex(int x, int y, int layer) const
 {
-    return x + y * level->dimensions.x;
+    return x + y * level->dimensions.x + layer * level->dimensions.x * level->dimensions.y;
 }
 
 void Editor::ReloadLevel(Level* l)
@@ -247,17 +263,18 @@ void Editor::ReloadLevel(Level* l)
     if (spriteRenderers != nullptr)
         delete[] spriteRenderers;
 
-    spriteRenderers = new SpriteRenderer[level->dimensions.x * level->dimensions.y];
-    for (int y = 0; y < level->dimensions.y; y++)
-        for (int x = 0; x < level->dimensions.x; x++)
-        {
-            int i = GetIndex(x, y);
-            // set stuff
-            spriteRenderers[i].SetTexture(whiteTex);
-            // make checkerboard pattern
-            float v = (x + y) % 2 == 0 ? 0.9f : 0.85f;
-            spriteRenderers[i].tint = v4(v, v, v, 1.0f);
-        }
+    spriteRenderers = new SpriteRenderer[level->dimensions.x * level->dimensions.y * TILE_CHUNK_LAYERS];
+    for (int l = TILE_CHUNK_LAYERS - 1; l >= 0; l--)
+    {
+        for (int y = 0; y < level->dimensions.y; y++)
+            for (int x = 0; x < level->dimensions.x; x++)
+            {
+                int i = GetIndex(x, y, l);
+                // set stuff
+                spriteRenderers[i].SetTexture(whiteTex);
+                spriteRenderers[i].SetLayer(l);
+            }
+    }
 
     // reload tools
     for each (GeometryTool* t in tools)

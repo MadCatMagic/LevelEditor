@@ -1,4 +1,4 @@
-#zwrite on
+#zwrite off
 #cull off
 #blend on
 #blendsrc SrcAlpha

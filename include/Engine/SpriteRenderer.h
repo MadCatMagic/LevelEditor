@@ -73,7 +73,7 @@ private:
 
 	// instancing
 	static std::unordered_map<int, std::vector<InstanceData>, CustomHash> instancedData;
-	static std::unordered_map<int, int, CustomHash> numInstancesPerTex;
+	//static std::unordered_map<int, int, CustomHash> numInstancesPerTex;
 
 	static std::vector<SpriteRenderer*> renderers;
 };
