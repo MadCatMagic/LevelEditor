@@ -1,15 +1,13 @@
 #include "Editor/EditorGizmos.h"
-#include "Engine/SpriteRenderer.h"
+
+#include "Engine/Mesh/QuadRenderer.h"
 
 #include "Engine/Mesh/Material.h"
 #include "Engine/Mesh/Shader.h"
-#include "Engine/Mesh/VertexArray.h"
-#include "Engine/Mesh/VertexBuffer.h"
 
 namespace EditorGizmos
 {
-	static VertexBuffer* blitVB;
-	static VertexArray* blitVA;
+	static SimpleQuadRenderer* renderer;
 	static Shader* blitShader;
 	static Material* blitMat;
 
@@ -21,12 +19,8 @@ namespace EditorGizmos
 		editor = e;
 
 		// setup renderer
-		blitVB = new VertexBuffer(nullptr, 0);
-		blitVA = new VertexArray();
-		blitVA->Construct();
-		blitVA->EnableAttribute(0);
-		blitVA->FormatAttribute(0, 2, GL_FLOAT, false, 0, 0);
-		blitVA->DisableAttribute(0);
+		renderer = new SimpleQuadRenderer();
+
 		// Create and compile our GLSL program from the shaders
 		blitShader = new Shader("res/shaders/EditorGizmos.shader");
 		blitMat = new Material(*blitShader);
@@ -61,39 +55,29 @@ namespace EditorGizmos
 		v2 p2 = editor->PixelToScreen(editor->WorldToPixel(endPos + norm * thickness * 0.05f));
 		v2 p3 = editor->PixelToScreen(editor->WorldToPixel(startPos - norm * thickness * 0.05f));
 		v2 p4 = editor->PixelToScreen(editor->WorldToPixel(endPos - norm * thickness * 0.05f));
-
-		float quad[] {
-			p1.x, p1.y, p2.x, p2.y, p3.x, p3.y,
-			p3.x, p3.y, p2.x, p2.y, p4.x, p4.y
-		};
-
-		// 1rst attribute buffer : vertices
-		blitVB->SetData(quad, sizeof(float) * 12, VertexBuffer::UsageHint::StreamDraw);
-
-		// Draw the lines !
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		
+		// draw it
+		renderer->SetVerts(p1, p2, p3, p4);
+		renderer->Render();
 	}
 
 	void DrawAllGizmos()
 	{
 		blitMat->Bind();
-		blitVB->Bind();
-		blitVA->Bind();
-		blitVA->EnableAttribute(0);
+		renderer->Bind();
+
 		for each (auto & gizmo in gizmosToDraw)
 		{
 			colour = gizmo.colour;
 			DrawLineReal(gizmo.startPos, gizmo.endPos, gizmo.thickness);
 		}
-		blitVA->DisableAttribute(0);
 
 		gizmosToDraw.clear();
 	}
 
 	void Release()
 	{
-		delete blitVB;
-		delete blitVA;
+		delete renderer;
 		delete blitShader;
 		delete blitMat;
 	}

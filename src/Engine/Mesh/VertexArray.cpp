@@ -26,7 +26,7 @@ void VertexArray::DisableAttribute(unsigned int index)
 
 void VertexArray::FormatAttribute(unsigned int index, int size, GLenum type, bool normalized, int stride, void* pointer)
 {
-	glVertexAttribPointer(index, size, GL_FLOAT, false, stride, pointer);
+	glVertexAttribPointer(index, size, type, false, stride, pointer);
 }
 
 void VertexArray::Construct()
@@ -52,9 +52,9 @@ unsigned int VertexArray::currentlyBound = 0;
 
 VAStructure::VAStructure(const std::string& initToken)
 {
-	length = initToken.size();
-	data = new int[length];
-	for (int i = 0; i < length; i++)
+	numAttributes = initToken.size() / 2;
+	data = new int[initToken.size()];
+	for (int i = 0; i < initToken.size(); i++)
 	{
 		if (i % 2 == 0)
 		{
