@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine\Mesh\QuadRenderer.cpp" />
     <ClCompile Include="src\Compiler\FileManager.cpp" />
     <ClCompile Include="src\Compiler\Compiler.cpp" />
     <ClCompile Include="src\Editor\EditorGizmos.cpp" />
@@ -59,6 +60,7 @@
     <ClInclude Include="include\Engine.h" />
     <ClInclude Include="include\Engine\Input.h" />
     <ClInclude Include="include\Engine\Mesh\Material.h" />
+    <ClInclude Include="include\Engine\Mesh\QuadRenderer.h" />
     <ClInclude Include="include\Engine\Mesh\Shader.h" />
     <ClInclude Include="include\Engine\Mesh\VertexArray.h" />
     <ClInclude Include="include\Engine\Mesh\VertexBuffer.h" />

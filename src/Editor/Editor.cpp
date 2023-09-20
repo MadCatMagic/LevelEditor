@@ -153,9 +153,9 @@ void Editor::Render(RenderTexture* target)
                 col2 = 0.0f;
         }
 
-        EditorGizmos::SetColour(v4(1.0f, col1, col2, 1.0f));
-        for (int i = 0; i < (int)segment.vec.size() - 1; i++)
-            EditorGizmos::DrawLine(segment.vec[i], segment.vec[i + 1], 5.0f);
+        EditorGizmos::SetColour(v4(1.0f, col1, col2, 0.5f));
+        for (int i = 0; i < (int)segment.vec.size() - segment.isLoop * 3 - 1; i++)
+            EditorGizmos::DrawLine(segment.vec[i], segment.vec[i + 1], 2.0f);
     }
 }
 

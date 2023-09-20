@@ -49,3 +49,33 @@ void VertexArray::Unbind() const
 }
 
 unsigned int VertexArray::currentlyBound = 0;
+
+VAStructure::VAStructure(const std::string& initToken)
+{
+	length = initToken.size();
+	data = new int[length];
+	for (int i = 0; i < length; i++)
+	{
+		if (i % 2 == 0)
+		{
+			data[i] = std::stoi(std::string(&initToken[i], 1));
+			width += data[i];
+		}
+		else
+		{
+			if (initToken[i] == 'f')
+				data[i] = GL_FLOAT;
+			else if (initToken[i] == 'i')
+				data[i] = GL_INT;
+			else if (initToken[i] == 'u')
+				data[i] = GL_UNSIGNED_INT;
+			else
+				exit(-1);
+		}
+	}
+}
+
+std::pair<int, GLenum> VAStructure::Get(int i)
+{
+	return std::pair<int, GLenum>(data[i * 2], data[i * 2 + 1]);
+}

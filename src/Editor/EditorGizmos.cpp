@@ -25,14 +25,11 @@ namespace EditorGizmos
 		blitVA = new VertexArray();
 		blitVA->Construct();
 		blitVA->EnableAttribute(0);
-		blitVA->FormatAttribute(0, 3, GL_FLOAT, false, 0, 0);
+		blitVA->FormatAttribute(0, 2, GL_FLOAT, false, 0, 0);
 		blitVA->DisableAttribute(0);
 		// Create and compile our GLSL program from the shaders
 		blitShader = new Shader("res/shaders/EditorGizmos.shader");
 		blitMat = new Material(*blitShader);
-
-		// line aliasing
-		glEnable(GL_LINE_SMOOTH);
 	}
 
 	void SetColour(const v4& col)
@@ -52,29 +49,33 @@ namespace EditorGizmos
 
 	void DrawLineReal(const v2& startPos, const v2& endPos, float thickness)
 	{
-		glLineWidth(thickness);
+		// deprecated glLineWidth(thickness);
 
 		// Use the shader
 		blitMat->SetVector4("tint", colour);
 
 		// create the vertex data
-		v2 p1 = editor->PixelToScreen(editor->WorldToPixel(startPos));
-		v2 p2 = editor->PixelToScreen(editor->WorldToPixel(endPos));
-		float line[] {
-			p1.x, p1.y, 0.0f,
-			p2.x, p2.y, 0.0f
+		v2 norm = endPos - startPos;
+		norm = v2::Normalize(v2(-norm.y, norm.x)); // rotate 90 degrees
+		v2 p1 = editor->PixelToScreen(editor->WorldToPixel(startPos + norm * thickness * 0.05f));
+		v2 p2 = editor->PixelToScreen(editor->WorldToPixel(endPos + norm * thickness * 0.05f));
+		v2 p3 = editor->PixelToScreen(editor->WorldToPixel(startPos - norm * thickness * 0.05f));
+		v2 p4 = editor->PixelToScreen(editor->WorldToPixel(endPos - norm * thickness * 0.05f));
+
+		float quad[] {
+			p1.x, p1.y, p2.x, p2.y, p3.x, p3.y,
+			p3.x, p3.y, p2.x, p2.y, p4.x, p4.y
 		};
 
 		// 1rst attribute buffer : vertices
-		blitVB->SetData(line, sizeof(float) * 6, VertexBuffer::UsageHint::StreamDraw);
+		blitVB->SetData(quad, sizeof(float) * 12, VertexBuffer::UsageHint::StreamDraw);
 
 		// Draw the lines !
-		glDrawArrays(GL_LINES, 0, 2);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
 	void DrawAllGizmos()
 	{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		blitMat->Bind();
 		blitVB->Bind();
 		blitVA->Bind();
@@ -85,7 +86,6 @@ namespace EditorGizmos
 			DrawLineReal(gizmo.startPos, gizmo.endPos, gizmo.thickness);
 		}
 		blitVA->DisableAttribute(0);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		gizmosToDraw.clear();
 	}

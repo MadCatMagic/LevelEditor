@@ -23,6 +23,8 @@ public:
 	v2 PixelToScreen(const v2& p) const;
 	v2 ScreenToPixel(const v2& p) const;
 
+	inline v2i GetWinSize() const { return winSize; }
+
 private:
 	int GetIndex(const v2i& pos) const;
 	int GetIndex(int x, int y, int layer) const;

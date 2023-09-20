@@ -63,7 +63,7 @@ bool Engine::CreateWindow(const v2i& windowSize, const std::string& name)
     /* Create a windowed mode window and its OpenGL context */
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     window = glfwCreateWindow(winSize.x, winSize.y, name.c_str(), NULL, NULL);
     if (!window)
     {
