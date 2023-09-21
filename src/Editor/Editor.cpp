@@ -113,13 +113,13 @@ void Editor::Render(RenderTexture* target)
             {
                 // translate from tile space to pixel space
                 int i = GetIndex(x, y, l);
-                v2 targetPos = WorldToPixel((v2)v2i(x, y));
+                v2 targetPos = WorldToPixel(v2(x, y));
                 spriteRenderers[i].SetPixelPos(targetPos);
                 spriteRenderers[i].SetScale(viewerScale);
 
                 // make checkerboard pattern
                 float v = vc * (float)(TILE_CHUNK_LAYERS - abs(l - *currentLayer)) / (float)TILE_CHUNK_LAYERS;
-                spriteRenderers[i].tint = v4(v, v, v, 1.0f);
+                spriteRenderers[i].tint = v4(v, v, v, v);
 
                 // ensure it renders properly
                 auto tile = level->GetTile(v2i(x, y), l);

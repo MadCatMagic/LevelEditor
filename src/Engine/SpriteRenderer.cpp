@@ -108,9 +108,8 @@ void SpriteRenderer::Render()
 	v2 realscale = v2::Scale(v2((float)dimensions.x / (float)pixelScreenSize.x, (float)dimensions.y / (float)pixelScreenSize.y), scale);
 
 	// target position
-	v2 realpos = (v2)pos * 2.0f - (v2)pixelScreenSize + (v2)pixelSize;
-	// scale to 0-1
-	realpos = v2(realpos.x / pixelScreenSize.x, realpos.y / pixelScreenSize.y);
+	// same as Editor::PixelToScreen
+	v2 realpos = realpos = v2::Scale(pos + v2::Scale((v2)pixelSize * 0.5f, scale), v2::Reciprocal(pixelScreenSize)) * 2.0f - v2::one;
 
 	InstanceData obj = InstanceData(realpos, realscale, rotation, tint);
 
