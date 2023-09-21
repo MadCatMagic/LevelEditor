@@ -3,10 +3,13 @@
 #include <vector>
 #include <unordered_map>
 
+typedef int TileMaterial;
+
 struct TileData 
 {
 	bool solid = false;
 	int slant = 0;
+	TileMaterial material = 0;
 };
 
 // 16 x 16

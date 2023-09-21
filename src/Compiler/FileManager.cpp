@@ -26,7 +26,7 @@ void FileManager::SaveLevel(Level* level, const std::string& filename)
                 for (int x = 0; x < TILE_CHUNK_SIZE; x++)
                 {
                     TileData& t = c->tiles[layer][x][y];
-                    stream << std::to_string(t.solid) << std::to_string(t.slant) << ",";
+                    stream << std::to_string(t.solid) << std::to_string(t.slant) << std::to_string(t.material) << ",";
                 }
     }
 
@@ -58,6 +58,9 @@ Level* FileManager::LoadLevel(const std::string& filename)
 
     v2i min;
     v2i max;
+
+    v2i pos;
+    std::string materialBuffer;
 
     char c;
     while (stream.get(c))
@@ -108,6 +111,9 @@ Level* FileManager::LoadLevel(const std::string& filename)
         {
             if (c == ',')
             {
+                chunk->tiles[layer][pos.x][pos.y].material = std::stoi(materialBuffer);
+                materialBuffer = "";
+
                 // reset and increment index
                 tileIndex++;
                 if (tileIndex == TILE_CHUNK_SIZE * TILE_CHUNK_SIZE)
@@ -121,13 +127,16 @@ Level* FileManager::LoadLevel(const std::string& filename)
             }
 
             // work out what part of the tile this corresponds to and coords of tile
-            v2i pos = v2i(tileIndex % TILE_CHUNK_SIZE, tileIndex / TILE_CHUNK_SIZE);
+            pos = v2i(tileIndex % TILE_CHUNK_SIZE, tileIndex / TILE_CHUNK_SIZE);
 
             if (tileScanProgress == 0) // solid
                 chunk->tiles[layer][pos.x][pos.y].solid = c == '1';
 
             else if (tileScanProgress == 1) // slant
                 chunk->tiles[layer][pos.x][pos.y].slant = c - '0';
+
+            else if (tileScanProgress > 1)
+                materialBuffer += c;
 
             tileScanProgress += 1;
         }
