@@ -1,7 +1,7 @@
 #pragma once
 #include "Level.h"
 #include <vector>
-#include "GeometryTool.h"
+#include "SpecificEditor.h"
 
 #include "Compiler/FileManager.h"
 
@@ -26,10 +26,15 @@ public:
 	inline v2i GetWinSize() const { return winSize; }
 
 private:
+	enum EditorMode {Geometry = 0, Material = 1};
+	EditorMode mode = EditorMode::Geometry;
+
 	int GetIndex(const v2i& pos) const;
 	int GetIndex(int x, int y, int layer) const;
 
 	void ReloadLevel(Level* l);
+
+	void ChangeEditor(EditorMode newMode);
 
 	Level* level{ nullptr };
 	class Texture2D* whiteTex = nullptr;
@@ -45,12 +50,11 @@ private:
 	bool initialized = false;
 
 	// editing tools
-	std::vector<GeometryTool*> tools;
-	int selectedTool = 0;
+	std::vector<SpecificEditor*> editors;
+	EditorTool* selectedTool = nullptr;
 
+	class LayerTool* layerTool = nullptr;
 	int* currentLayer = nullptr;
-	
-	// testing
-	std::vector<ColliderSegment> compiledGeometry;
+
 };
 

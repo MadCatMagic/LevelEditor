@@ -24,8 +24,8 @@ Editor::~Editor()
         delete slantTex;
         delete[] spriteRenderers;
 
-        for (GeometryTool* tool : tools)
-            delete tool;
+        for (SpecificEditor* editor : editors)
+            delete editor;
 
         EditorGizmos::Release();
     }
@@ -43,13 +43,16 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
     slantTex->sampling = Texture::Sampling::Nearest;
     slantTex->ApplyFiltering();
 
+    // setup editors
+    editors.push_back(new GeometryEditor(level, this));
+    editors.push_back(new MaterialEditor(level, this));
+
     // setup tools
-    tools.push_back(new DrawGeometryTool(target, "geometry_draw_icon.png"));
-    tools.push_back(new BoxGeometryTool(target, "geometry_boxfill_icon.png"));
-    tools.push_back(new RotateGeometryTool(target, "geometry_boxfill_icon.png")); // need to add icon
-    LayerGeometryTool* layerTool = new LayerGeometryTool(target, "geometry_boxfill_icon.png");
+    layerTool = new LayerTool(target, "geometry_boxfill_icon.png");
     currentLayer = layerTool->GetCurrentLayer(); // maybe works
-    tools.push_back(layerTool); // need to add icon
+    selectedTool = layerTool;
+
+    editors[mode]->SetupTools();
 
     ReloadLevel(target);
 
@@ -66,17 +69,17 @@ void Editor::Update()
     v2 pos = PixelToWorld(pixelPos);
 
     // do tools stuff first
-    for each (auto & tool in tools)
+    for each (auto & tool in editors[mode]->tools)
         tool->SetLayer(*currentLayer);
 
     bool shift = Input::GetKey(Input::Key::LSHIFT);
     bool ctrl = Input::GetKey(Input::Key::LCONTROL);
     if (Input::GetMouseButtonDown(0))
-        tools[selectedTool]->OnClick(shift, ctrl, v2i(pos));
+        selectedTool->OnClick(shift, ctrl, v2i(pos));
     else if (Input::GetMouseButton(0))
-        tools[selectedTool]->OnHoldClick(shift, ctrl, v2i(pos));
+        selectedTool->OnHoldClick(shift, ctrl, v2i(pos));
     else if (Input::GetMouseButtonUp(0))
-        tools[selectedTool]->OnReleaseClick(shift, ctrl, v2i(pos));
+        selectedTool->OnReleaseClick(shift, ctrl, v2i(pos));
 
     // now do translation and zooming
     if (Input::GetMouseButton(1))
@@ -138,25 +141,7 @@ void Editor::Render(RenderTexture* target)
             }
         }
 
-    // testing
-    EditorGizmos::SetColour(v4(1.0f, 0.0f, 0.0f, 0.5f));
-    float col1 = 0.0f;
-    float col2 = 0.0f;
-    for each (const ColliderSegment & segment in compiledGeometry)
-    {
-        col1 += 0.25f;
-        if (col1 > 1.0f)
-        {
-            col1 = 0.0f;
-            col2 += 0.25f;
-            if (col2 > 1.0f)
-                col2 = 0.0f;
-        }
-
-        EditorGizmos::SetColour(v4(1.0f, col1, col2, 0.5f));
-        for (int i = 0; i < (int)segment.vec.size() - segment.isLoop * 3 - 1; i++)
-            EditorGizmos::DrawLine(segment.vec[i], segment.vec[i + 1], 2.0f);
-    }
+    editors[mode]->Render();
 }
 
 void Editor::RenderUI(ImGuiIO* io)
@@ -164,7 +149,6 @@ void Editor::RenderUI(ImGuiIO* io)
     ZoneScoped;
     ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
-    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too
     ImGui::Text(("viewerPosition: " + viewerPosition.ToString() + " viewerScale: " + viewerScale.ToString()).c_str());
     ImGui::Text(("layer: " + std::to_string(*currentLayer)).c_str());
     //ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
@@ -178,20 +162,37 @@ void Editor::RenderUI(ImGuiIO* io)
     //ImGui::SameLine();
     //ImGui::Text("counter = %d", counter);
 
+    ImGui::Text("Editor modes:");
+    if (ImGui::Button("Geometry Editor"))
+        ChangeEditor(EditorMode::Geometry);
+    if (ImGui::Button("Material Editor"))
+        ChangeEditor(EditorMode::Material);
+
     // tool option menu
-    for (int i = 0; i < (int)tools.size(); i++)
+    for (int i = -1; i < (int)editors[mode]->tools.size(); i++)
     {
         ImGui::PushID(i); // probably not that necessary
+        unsigned int targetTex;
+        if (i == -1)
+            targetTex = layerTool->GetTextureID();
+        else
+            targetTex = editors[mode]->tools[i]->GetTextureID();
+
         if (ImGui::ImageButton(
             "",
-            (void*)tools[i]->GetTextureID(),//(void*)tools[i]->GetTextureID(),
+            (void*)targetTex,//(void*)tools[i]->GetTextureID(),
             ImVec2(16.0f, 16.0f),           // size of the image
             ImVec2(0.0f, 0.0f),             // uv coordinates for lower left
             ImVec2(1.0f, 1.0f),             // uv coordinates for top right
             ImVec4(0.0f, 0.0f, 0.0f, 1.0f), // black background
             ImVec4(1.0f, 1.0f, 1.0f, 1.0f)  // no tint
         ))
-            selectedTool = i;
+        {
+            if (i != -1)
+                selectedTool = editors[mode]->tools[i];
+            else
+                selectedTool = layerTool;
+        }
         ImGui::PopID();
         ImGui::SameLine();
     }
@@ -214,12 +215,7 @@ void Editor::RenderUI(ImGuiIO* io)
             ReloadLevel(l);
     }
 
-    // testing
-    if (ImGui::Button("test exporter"))
-    {
-        Compiler c = Compiler(level);
-        compiledGeometry = c.CompileGeometry(0);
-    }
+    editors[mode]->RenderUI();
 
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
     ImGui::End();
@@ -277,6 +273,18 @@ void Editor::ReloadLevel(Level* l)
     }
 
     // reload tools
-    for each (GeometryTool* t in tools)
-        t->SetLevel(level);
+    for (int i = 0; i < editors.size(); i++)
+    {
+        for each (EditorTool* t in editors[i]->tools)
+            t->SetLevel(level);
+
+        editors[i]->target = level;
+        editors[i]->OnReload();
+    } 
+    
+}
+
+void Editor::ChangeEditor(EditorMode newMode)
+{
+    mode = newMode;
 }

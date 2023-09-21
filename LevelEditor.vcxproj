@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Editor\EditorTool.cpp" />
+    <ClCompile Include="src\Editor\SpecificEditor.cpp" />
     <ClCompile Include="src\Engine\Mesh\QuadRenderer.cpp" />
     <ClCompile Include="src\Compiler\FileManager.cpp" />
     <ClCompile Include="src\Compiler\Compiler.cpp" />
@@ -52,6 +54,7 @@
     <ClCompile Include="src\Maths\Vector4i.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Editor\EditorTool.h" />
     <ClInclude Include="include\Compiler\FileManager.h" />
     <ClInclude Include="include\Compiler\Compiler.h" />
     <ClInclude Include="include\Editor\EditorGizmos.h" />
@@ -78,6 +81,7 @@
     <ClInclude Include="include\Vector.h" />
     <ClInclude Include="include\Editor\Level.h" />
     <ClInclude Include="include\Engine\SpriteRenderer.h" />
+    <ClInclude Include="include\Editor\SpecificEditor.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4a1fb5ea-22f5-42a8-ab92-1d2df5d47fb9}</ProjectGuid>
