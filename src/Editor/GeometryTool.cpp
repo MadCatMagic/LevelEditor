@@ -65,5 +65,46 @@ void RotateGeometryTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 {
 	TileData* t = level->GetTile(pos, layer);
 	if (t != nullptr && t->solid)
-		t->slant = (t->slant + 1 - 2 * shift) % 5;
+	{
+		// credit to monty for this disgusting hardcoding
+		// it works and i hope never to look at it again.
+		const int lookupTable[] {
+			0, 1, 2, 2, 3, 0, 3, 0, 4, 1, 0, 0, 4, 0, 0, 0
+		};
+
+		const int permutationTable[][5]{
+			{1, 2, 3, 4, 0},
+			{1, 2, 3, 4, 0},
+			{2, 3, 4, 1, 0},
+			{3, 4, 1, 2, 0},
+			{4, 1, 2, 3, 0}
+		};
+
+		// 1001 is first slant value
+		// 1100 is second
+		// 0110
+		// 0011
+		// etc... for one neighbour too.
+		unsigned int lookupValue =
+			IsSolid(pos + v2i(1, 0)) +
+			(IsSolid(pos + v2i(0, 1)) << 1) +
+			(IsSolid(pos + v2i(-1, 0)) << 2) +
+			(IsSolid(pos + v2i(0, -1)) << 3);
+
+		int offset = lookupTable[lookupValue];
+		for (int i = 0; i < 5; i++)
+		{
+			if (permutationTable[offset][i] == t->slant)
+			{
+				t->slant = permutationTable[offset][(i + 1 - 2 * shift) % 5];
+				return;
+			}
+		}
+	}
+}
+
+bool RotateGeometryTool::IsSolid(const v2i& pos)
+{
+	TileData* t = level->GetTile(pos, layer);
+	return t != nullptr && t->solid;
 }

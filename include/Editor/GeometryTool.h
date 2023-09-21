@@ -40,4 +40,7 @@ public:
 	using GeometryTool::GeometryTool;
 	
 	void OnClick(bool shift, bool ctrl, const v2i& pos) override;
+
+private:
+	bool IsSolid(const v2i& pos);
 };
