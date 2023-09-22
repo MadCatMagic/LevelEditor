@@ -20,6 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Editor\EditorTool.cpp" />
+    <ClCompile Include="src\Editor\GeometryEditor.cpp" />
+    <ClCompile Include="src\Editor\MaterialEditor.cpp" />
     <ClCompile Include="src\Editor\SpecificEditor.cpp" />
     <ClCompile Include="src\Engine\Mesh\QuadRenderer.cpp" />
     <ClCompile Include="src\Compiler\FileManager.cpp" />
@@ -59,7 +61,9 @@
     <ClInclude Include="include\Compiler\Compiler.h" />
     <ClInclude Include="include\Editor\EditorGizmos.h" />
     <ClInclude Include="include\Editor\Editor.h" />
+    <ClInclude Include="include\Editor\GeometryEditor.h" />
     <ClInclude Include="include\Editor\GeometryTool.h" />
+    <ClInclude Include="include\Editor\MaterialEditor.h" />
     <ClInclude Include="include\Engine.h" />
     <ClInclude Include="include\Engine\Input.h" />
     <ClInclude Include="include\Engine\Mesh\Material.h" />

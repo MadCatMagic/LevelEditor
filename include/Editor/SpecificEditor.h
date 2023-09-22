@@ -3,8 +3,6 @@
 #include <vector>
 #include "Editor/EditorTool.h"
 
-#include "Compiler/FileManager.h"
-
 
 class SpecificEditor
 {
@@ -31,32 +29,4 @@ protected:
 
 	Level* target = nullptr;
 	Editor* parent = nullptr;
-};
-
-class GeometryEditor : public SpecificEditor
-{
-public:
-	using SpecificEditor::SpecificEditor;
-
-	void SetupTools() override;
-	void Render() override;
-	void RenderUI() override;
-	void OnReload() override;
-
-private:
-	// testing
-	std::vector<ColliderSegment> compiledGeometry;
-};
-
-class MaterialEditor : public SpecificEditor
-{
-public:
-	using SpecificEditor::SpecificEditor;
-
-	void SetupTools() override;
-	void Render() override;
-	void RenderUI() override;
-	void OnReload() override;
-
-private:
 };

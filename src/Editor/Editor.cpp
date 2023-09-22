@@ -9,6 +9,8 @@
 
 #include "Editor/EditorGizmos.h"
 //#include "Compiler/FileManager.h"
+#include "Editor/GeometryEditor.h"
+#include "Editor/MaterialEditor.h"
 
 #include "tracy/Tracy.hpp"
 

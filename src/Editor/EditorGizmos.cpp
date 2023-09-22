@@ -14,6 +14,16 @@ namespace EditorGizmos
 	static Editor* editor;
 	static v4 colour;
 
+	struct GizmosLine : public GizmosObject {
+		v2 startPos;
+		v2 endPos;
+		float thickness = 0.0f;
+	};
+	struct GizmosRect : public GizmosObject {
+		v2 centre;
+		v2 size;
+	};
+
 	void Initialize(Editor* e)
 	{
 		editor = e;
@@ -33,11 +43,20 @@ namespace EditorGizmos
 
 	void DrawLine(const v2& startPos, const v2& endPos, float thickness)
 	{
-		GizmosLine obj;
-		obj.colour = colour;
-		obj.startPos = startPos;
-		obj.endPos = endPos;
-		obj.thickness = thickness;
+		GizmosLine* obj = new GizmosLine();
+		obj->colour = colour;
+		obj->startPos = startPos;
+		obj->endPos = endPos;
+		obj->thickness = thickness;
+		gizmosToDraw.push_back(obj);
+	}
+
+	void DrawRect(const v2& centre, const v2& size)
+	{
+		GizmosRect* obj = new GizmosRect();
+		obj->colour = colour;
+		obj->centre = centre;
+		obj->size = size;
 		gizmosToDraw.push_back(obj);
 	}
 
@@ -61,17 +80,43 @@ namespace EditorGizmos
 		renderer->Render();
 	}
 
+	void DrawRectReal(const v2& centre, const v2& size)
+	{
+		blitMat->SetVector4("tint", colour);
+
+		v2 s = size * 0.5f;
+
+		renderer->SetVerts(
+			editor->PixelToScreen(editor->WorldToPixel(centre + s)),
+			editor->PixelToScreen(editor->WorldToPixel(centre + v2(s.x, -s.y))),
+			editor->PixelToScreen(editor->WorldToPixel(centre + v2(-s.x, s.y))),
+			editor->PixelToScreen(editor->WorldToPixel(centre - s))
+		);
+		renderer->Render();
+	}
+
 	void DrawAllGizmos()
 	{
 		blitMat->Bind();
 		renderer->Bind();
 
-		for each (auto & gizmo in gizmosToDraw)
+		for each (auto gizmo in gizmosToDraw)
 		{
-			colour = gizmo.colour;
-			DrawLineReal(gizmo.startPos, gizmo.endPos, gizmo.thickness);
+			colour = gizmo->colour;
+			if (dynamic_cast<GizmosLine*>(gizmo) != nullptr)
+			{
+				GizmosLine* obj = static_cast<GizmosLine*>(gizmo);
+				DrawLineReal(obj->startPos, obj->endPos, obj->thickness);
+			}
+			else if (dynamic_cast<GizmosRect*>(gizmo) != nullptr)
+			{
+				GizmosRect* obj = static_cast<GizmosRect*>(gizmo);
+				DrawRectReal(obj->centre, obj->size);
+			}
 		}
 
+		for (int i = 0; i < gizmosToDraw.size(); i++)
+			delete gizmosToDraw[i];
 		gizmosToDraw.clear();
 	}
 
