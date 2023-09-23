@@ -14,16 +14,6 @@ namespace EditorGizmos
 	static Editor* editor;
 	static v4 colour;
 
-	struct GizmosLine : public GizmosObject {
-		v2 startPos;
-		v2 endPos;
-		float thickness = 0.0f;
-	};
-	struct GizmosRect : public GizmosObject {
-		v2 centre;
-		v2 size;
-	};
-
 	void Initialize(Editor* e)
 	{
 		editor = e;
@@ -43,30 +33,25 @@ namespace EditorGizmos
 
 	void DrawLine(const v2& startPos, const v2& endPos, float thickness)
 	{
-		GizmosLine* obj = new GizmosLine();
-		obj->colour = colour;
-		obj->startPos = startPos;
-		obj->endPos = endPos;
-		obj->thickness = thickness;
+		GizmosObject obj = GizmosObject();
+		obj.colour = colour;
+		obj.p1 = v4(startPos.x, startPos.y, endPos.x, endPos.y);
+		obj.p2 = v4(); obj.p2.x = thickness;
+		obj.type = GizmosType::Line;
 		gizmosToDraw.push_back(obj);
 	}
 
 	void DrawRect(const v2& centre, const v2& size)
 	{
-		GizmosRect* obj = new GizmosRect();
-		obj->colour = colour;
-		obj->centre = centre;
-		obj->size = size;
+		GizmosObject obj = GizmosObject();
+		obj.colour = colour;
+		obj.p1 = v4(centre.x, centre.y, size.x, size.y);
+		obj.type = GizmosType::Rect;
 		gizmosToDraw.push_back(obj);
 	}
 
 	void DrawLineReal(const v2& startPos, const v2& endPos, float thickness)
 	{
-		// deprecated glLineWidth(thickness);
-
-		// Use the shader
-		blitMat->SetVector4("tint", colour);
-
 		// create the vertex data
 		v2 norm = endPos - startPos;
 		norm = v2::Normalize(v2(-norm.y, norm.x)); // rotate 90 degrees
@@ -82,8 +67,6 @@ namespace EditorGizmos
 
 	void DrawRectReal(const v2& centre, const v2& size)
 	{
-		blitMat->SetVector4("tint", colour);
-
 		v2 s = size * 0.5f;
 
 		renderer->SetVerts(
@@ -100,23 +83,24 @@ namespace EditorGizmos
 		blitMat->Bind();
 		renderer->Bind();
 
-		for each (auto gizmo in gizmosToDraw)
+		for each (auto& gizmo in gizmosToDraw)
 		{
-			colour = gizmo->colour;
-			if (dynamic_cast<GizmosLine*>(gizmo) != nullptr)
+			if (colour != gizmo.colour)
 			{
-				GizmosLine* obj = static_cast<GizmosLine*>(gizmo);
-				DrawLineReal(obj->startPos, obj->endPos, obj->thickness);
+				colour = gizmo.colour;
+				blitMat->SetVector4("tint", colour);
 			}
-			else if (dynamic_cast<GizmosRect*>(gizmo) != nullptr)
+
+			if (gizmo.type == GizmosType::Line)
 			{
-				GizmosRect* obj = static_cast<GizmosRect*>(gizmo);
-				DrawRectReal(obj->centre, obj->size);
+				DrawLineReal(v2(gizmo.p1.x, gizmo.p1.y), v2(gizmo.p1.z, gizmo.p1.w), gizmo.p2.x);
+			}
+			else if (gizmo.type == GizmosType::Rect)
+			{
+				DrawRectReal(v2(gizmo.p1.x, gizmo.p1.y), v2(gizmo.p1.z, gizmo.p1.w));
 			}
 		}
 
-		for (int i = 0; i < gizmosToDraw.size(); i++)
-			delete gizmosToDraw[i];
 		gizmosToDraw.clear();
 	}
 

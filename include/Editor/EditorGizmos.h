@@ -12,12 +12,17 @@ namespace EditorGizmos
 
 	extern void DrawRect(const v2& centre, const v2& size);
 
+	enum GizmosType { Line, Rect };
+
 	struct GizmosObject {
-		inline virtual ~GizmosObject() { };
 		v4 colour;
+		v4 p1;
+		v4 p2;
+
+		GizmosType type;
 	};
 
-	static std::vector<GizmosObject*> gizmosToDraw = std::vector<GizmosObject*>();
+	static std::vector<GizmosObject> gizmosToDraw = std::vector<GizmosObject>();
 
 	extern void DrawAllGizmos();
 }
