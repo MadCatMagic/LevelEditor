@@ -54,7 +54,8 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
     currentLayer = layerTool->GetCurrentLayer(); // maybe works
     selectedTool = layerTool;
 
-    editors[mode]->SetupTools();
+    for (int i = 0; i < editors.size(); i++)
+        editors[i]->SetupTools();
 
     ReloadLevel(target);
 

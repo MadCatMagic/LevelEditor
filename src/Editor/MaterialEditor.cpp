@@ -18,7 +18,10 @@ MaterialEditor::~MaterialEditor()
 
 void MaterialEditor::SetupTools()
 {
-	tools.push_back(new MaterialTool(target, "geometry_boxfill_icon.png"));
+	MaterialTool* t = new MaterialTool(target, "geometry_boxfill_icon.png");
+	t->SetToolReference(&selectedTool);
+	tools.push_back(t);
+	
 }
 
 void MaterialEditor::Render()
@@ -60,8 +63,19 @@ void MaterialEditor::RenderUI()
 		}
 		ImGui::EndListBox();
 	}
+
+	selectedTool = currentTab * 16 + mats->GetSelectedOnPage(currentTab);
 }
 
 void MaterialEditor::OnReload()
 {
+}
+
+void MaterialTool::OnHoldClick(bool shift, bool ctrl, const v2i& pos)
+{
+	TileData* t = level->GetTile(pos, layer);
+	if (t != nullptr && t->solid)
+	{
+		t->material = *selectedTool;
+	}
 }

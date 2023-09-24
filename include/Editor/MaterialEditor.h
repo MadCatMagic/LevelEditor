@@ -15,6 +15,8 @@ public:
 
 private:
 	MaterialManager* mats;
+
+	int selectedTool = 0;
 };
 
 class MaterialTool : public EditorTool
@@ -22,5 +24,10 @@ class MaterialTool : public EditorTool
 public:
 	using EditorTool::EditorTool;
 
-	MaterialManager* mats;
+	void OnHoldClick(bool shift, bool ctrl, const v2i& pos) override;
+
+	inline void SetToolReference(int* tool) { selectedTool = tool; }
+
+private:
+	int* selectedTool = nullptr;
 };
