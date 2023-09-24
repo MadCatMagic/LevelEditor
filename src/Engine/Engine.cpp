@@ -123,6 +123,7 @@ void Engine::Update()
     ImGui::NewFrame();
     
     editor.RenderUI(io);
+    ImGui::ShowDemoWindow();
 
     // Rendering
     ImGui::Render();

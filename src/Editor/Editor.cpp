@@ -275,7 +275,7 @@ void Editor::ReloadLevel(Level* l)
     }
 
     // reload tools
-    for (int i = 0; i < editors.size(); i++)
+    for (unsigned int i = 0; i < editors.size(); i++)
     {
         for each (EditorTool* t in editors[i]->tools)
             t->SetLevel(level);

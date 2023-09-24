@@ -46,6 +46,7 @@ namespace EditorGizmos
 		GizmosObject obj = GizmosObject();
 		obj.colour = colour;
 		obj.p1 = v4(centre.x, centre.y, size.x, size.y);
+		obj.p2 = v4();
 		obj.type = GizmosType::Rect;
 		gizmosToDraw.push_back(obj);
 	}
@@ -82,6 +83,7 @@ namespace EditorGizmos
 	{
 		blitMat->Bind();
 		renderer->Bind();
+		blitMat->SetVector4("tint", colour);
 
 		for each (auto& gizmo in gizmosToDraw)
 		{

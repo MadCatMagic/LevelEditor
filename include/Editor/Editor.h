@@ -24,6 +24,7 @@ public:
 	v2 ScreenToPixel(const v2& p) const;
 
 	inline v2i GetWinSize() const { return winSize; }
+	inline int GetCurrentLayer() const { return *currentLayer; }
 
 private:
 	enum EditorMode {Geometry = 0, Material = 1};
