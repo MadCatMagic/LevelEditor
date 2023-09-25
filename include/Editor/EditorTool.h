@@ -7,9 +7,9 @@ public:
 	EditorTool(Level* target, const std::string& iconName);
 	~EditorTool();
 
-	virtual inline void OnClick(bool shift, bool ctrl, const v2i& pos) {};
-	virtual inline void OnHoldClick(bool shift, bool ctrl, const v2i& pos) {};
-	virtual inline void OnReleaseClick(bool shift, bool ctrl, const v2i& pos) {};
+	inline virtual void OnClick(bool shift, bool ctrl, const v2i& pos) {};
+	inline virtual void OnHoldClick(bool shift, bool ctrl, const v2i& pos) {};
+	inline virtual void OnReleaseClick(bool shift, bool ctrl, const v2i& pos) {};
 
 	unsigned int GetTextureID() const;
 
@@ -17,7 +17,6 @@ public:
 	inline void SetLayer(int l) { layer = l; }
 
 protected:
-
 	Level* level;
 	int layer = 0;
 

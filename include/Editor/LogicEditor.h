@@ -1,7 +1,7 @@
 #pragma once
 #include "Editor/SpecificEditor.h"
 
-
+class LogicEditor;
 
 class LogicInspector
 {
@@ -10,6 +10,9 @@ public:
 
 	void SetTarget(Entity* target);
 	void SetTarget(AreaTrigger* target);
+
+	void* GetTarget() const;
+	inline void SetEditor(LogicEditor* e) { editor = e; };
 
 private:
 	void AfterSettingTarget();
@@ -27,6 +30,8 @@ private:
 	bool targetIsEntity = true;
 	Entity* entityTarget = nullptr;
 	AreaTrigger* triggerTarget = nullptr;
+
+	LogicEditor* editor;
 };
 
 
@@ -39,6 +44,8 @@ public:
 	void Render() override;
 	void RenderUI() override;
 	void OnReload() override;
+
+	void DeleteTrigger(AreaTrigger* t);
 
 private:
 	LogicInspector inspector;
@@ -71,6 +78,12 @@ public:
 	using LogicTool::LogicTool;
 
 	void OnClick(bool shift, bool ctrl, const v2i& pos) override;
+	void OnHoldClick(bool shift, bool ctrl, const v2i& pos) override;
+	void OnReleaseClick(bool shift, bool ctrl, const v2i& pos) override;
+
+private:
+	bool holding = false;
+	v2i startPos;
 };
 
 // todo
