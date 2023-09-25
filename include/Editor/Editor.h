@@ -27,7 +27,7 @@ public:
 	inline int GetCurrentLayer() const { return *currentLayer; }
 
 private:
-	enum EditorMode {Geometry = 0, Material = 1};
+	enum EditorMode {Geometry = 0, Material = 1, Logic = 2};
 	EditorMode mode = EditorMode::Geometry;
 
 	int GetIndex(const v2i& pos) const;

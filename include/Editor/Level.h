@@ -27,6 +27,25 @@ struct TileChunk
 	v2i chunkPos{};
 };
 
+struct Entity
+{
+	v2i position;
+	std::string name;
+
+	v4 editorColour = v4(1.0f, 0.0f, 0.0f, 1.0f);
+};
+
+struct AreaTrigger
+{
+	v2i bottomLeft;
+	v2i topRight;
+
+	int groupId;
+	std::string name;
+
+	v4 editorColour = v4(1.0f, 0.0f, 1.0f, 0.6f);
+};
+
 class Level
 {
 public:
@@ -41,6 +60,10 @@ public:
 	v2i dimensions;
 
 	bool ValidPosition(const v2i& pos) const;
+
+	// quite exposed
+	std::vector<Entity> entities;
+	std::vector<AreaTrigger> triggers;
 
 private:
 	void CreateChunk(const v2i& chunkPos);

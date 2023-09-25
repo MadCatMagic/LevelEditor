@@ -8,9 +8,10 @@
 #include <iostream>
 
 #include "Editor/EditorGizmos.h"
-//#include "Compiler/FileManager.h"
+
 #include "Editor/GeometryEditor.h"
 #include "Editor/MaterialEditor.h"
+#include "Editor/LogicEditor.h"
 
 #include "tracy/Tracy.hpp"
 
@@ -48,6 +49,7 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
     // setup editors
     editors.push_back(new GeometryEditor(level, this));
     editors.push_back(new MaterialEditor(level, this));
+    editors.push_back(new LogicEditor(level, this));
 
     // setup tools
     layerTool = new LayerTool(target, "geometry_boxfill_icon.png");
@@ -168,8 +170,12 @@ void Editor::RenderUI(ImGuiIO* io)
     ImGui::Text("Editor modes:");
     if (ImGui::Button("Geometry Editor"))
         ChangeEditor(EditorMode::Geometry);
+    ImGui::SameLine();
     if (ImGui::Button("Material Editor"))
         ChangeEditor(EditorMode::Material);
+    ImGui::SameLine();
+    if (ImGui::Button("Logic Editor"))
+        ChangeEditor(EditorMode::Logic);
 
     // tool option menu
     for (int i = -1; i < (int)editors[mode]->tools.size(); i++)
@@ -217,6 +223,8 @@ void Editor::RenderUI(ImGuiIO* io)
         if (l != nullptr)
             ReloadLevel(l);
     }
+
+    ImGui::NewLine();
 
     editors[mode]->RenderUI();
 

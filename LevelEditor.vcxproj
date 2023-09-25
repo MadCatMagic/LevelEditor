@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Editor\LogicEditor.cpp" />
     <ClCompile Include="src\Editor\LevelMaterial.cpp" />
     <ClCompile Include="src\Editor\EditorTool.cpp" />
     <ClCompile Include="src\Editor\GeometryEditor.cpp" />
@@ -88,6 +89,7 @@
     <ClInclude Include="include\Engine\SpriteRenderer.h" />
     <ClInclude Include="include\Editor\SpecificEditor.h" />
     <ClInclude Include="include\Editor\LevelMaterial.h" />
+    <ClInclude Include="include\Editor\LogicEditor.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4a1fb5ea-22f5-42a8-ab92-1d2df5d47fb9}</ProjectGuid>
