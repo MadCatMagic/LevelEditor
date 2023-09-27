@@ -28,8 +28,16 @@ void LogicEditor::Render()
 	for (const AreaTrigger& t : target->triggers)
 	{
 		EditorGizmos::SetColour(t.editorColour * 0.5f);
-		v2 diff = t.topRight - t.bottomLeft;
+		v2 diff = (v2)t.topRight + v2::one - (v2)t.bottomLeft;
 		EditorGizmos::DrawRect((v2)t.bottomLeft + diff * 0.5f, diff);
+	}
+
+	// then outline selected
+	if (inspector.IsAnythingSelected())
+	{
+		v4 p = inspector.GetBoundsOfSelected();
+		EditorGizmos::SetColour(v4(0.8f, 1.0f, 0.2f, 1.0f));
+		EditorGizmos::DrawRectOutline(v2(p.x, p.y), v2(p.z, p.w), 4.0f);
 	}
 }
 
@@ -48,6 +56,16 @@ void LogicEditor::DeleteTrigger(AreaTrigger* t)
 		if (&target->triggers[i] == t)
 		{
 			target->triggers.erase(target->triggers.begin() + i);
+			break;
+		}
+}
+
+void LogicEditor::DeleteEntity(Entity* e)
+{
+	for (int i = 0; i < target->entities.size(); i++)
+		if (&target->entities[i] == e)
+		{
+			target->entities.erase(target->entities.begin() + i);
 			break;
 		}
 }
@@ -104,6 +122,22 @@ void* LogicInspector::GetTarget() const
 		return triggerTarget;
 }
 
+v4 LogicInspector::GetBoundsOfSelected() const
+{
+	if (targetIsEntity)
+		return v4(entityTarget->position.x, entityTarget->position.y, entityTarget->position.x + 1, entityTarget->position.y + 1);
+	else
+		return v4(triggerTarget->bottomLeft.x, triggerTarget->bottomLeft.y, triggerTarget->topRight.x + 1, triggerTarget->topRight.y + 1);
+}
+
+void LogicInspector::DeleteEntity(Entity* e)
+{
+	if (targetIsEntity && e == entityTarget)
+		targetSelected = false;
+	entityTarget = nullptr;
+	editor->DeleteEntity(e);
+}
+
 void LogicInspector::AfterSettingTarget()
 {
 	targetSelected = true;
@@ -157,7 +191,7 @@ void EntityPlaceTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 
 	if (shift && occupied)
 	{
-		level->entities.erase(level->entities.begin() + index);
+		inspector->DeleteEntity(&level->entities[index]);
 		return;
 	}
 
@@ -215,10 +249,7 @@ void TriggerEditTool::OnHoldClick(bool shift, bool ctrl, const v2i& pos)
 		v2 a = v2i(std::min(pos.x, startPos.x), std::min(pos.y, startPos.y));
 		v2 b = v2i(std::max(pos.x, startPos.x), std::max(pos.y, startPos.y)) + v2i::one;
 
-		EditorGizmos::DrawLine(v2(a.x, a.y), v2(a.x, b.y), 2.0f);
-		EditorGizmos::DrawLine(v2(a.x, a.y), v2(b.x, a.y), 2.0f);
-		EditorGizmos::DrawLine(v2(a.x, b.y), v2(b.x, b.y), 2.0f);
-		EditorGizmos::DrawLine(v2(b.x, a.y), v2(b.x, b.y), 2.0f);
+		EditorGizmos::DrawRectOutline(a, b, 2.0f);
 	}
 }
 
@@ -228,7 +259,7 @@ void TriggerEditTool::OnReleaseClick(bool shift, bool ctrl, const v2i& pos)
 	{
 		AreaTrigger t;
 		t.bottomLeft = v2i(std::min(pos.x, startPos.x), std::min(pos.y, startPos.y));
-		t.topRight = v2i(std::max(pos.x, startPos.x), std::max(pos.y, startPos.y)) + v2i::one;
+		t.topRight = v2i(std::max(pos.x, startPos.x), std::max(pos.y, startPos.y));
 		t.name = "Trigger";
 		level->triggers.push_back(t);
 		inspector->SetTarget(&level->triggers[level->triggers.size() - 1]);

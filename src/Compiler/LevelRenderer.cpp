@@ -21,7 +21,7 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 			v2i lower = (v2i)realPos;
 			TileData* t = level->GetTile(lower, 0);
 			if (t->solid)
-				data[tex->CoordToIndex(v2i(x, y))] = v3(1.0f, 0.0f, 0.0f);
+				data[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = v3(1.0f, 0.0f, 0.0f);
 		}
 
 	tex->UpdateTexture();

@@ -14,6 +14,11 @@ public:
 	void* GetTarget() const;
 	inline void SetEditor(LogicEditor* e) { editor = e; };
 
+	v4 GetBoundsOfSelected() const;
+	inline bool IsAnythingSelected() const { return targetSelected; }
+
+	void DeleteEntity(Entity* e);
+
 private:
 	void AfterSettingTarget();
 
@@ -46,6 +51,7 @@ public:
 	void OnReload() override;
 
 	void DeleteTrigger(AreaTrigger* t);
+	void DeleteEntity(Entity* e);
 
 private:
 	LogicInspector inspector;
