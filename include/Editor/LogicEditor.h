@@ -14,6 +14,9 @@ public:
 	void* GetTarget() const;
 	inline void SetEditor(LogicEditor* e) { editor = e; };
 
+	v4 GetBoundsOfSelected() const;
+	inline bool IsAnythingSelected() const { return targetSelected; }
+
 private:
 	void AfterSettingTarget();
 

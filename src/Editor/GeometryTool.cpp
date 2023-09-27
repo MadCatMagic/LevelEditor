@@ -38,10 +38,7 @@ void BoxGeometryTool::OnHoldClick(bool shift, bool ctrl, const v2i& pos)
 		v2 a = v2i(std::min(pos.x, startPos.x), std::min(pos.y, startPos.y));
 		v2 b = v2i(std::max(pos.x, startPos.x), std::max(pos.y, startPos.y)) + v2i::one;
 
-		EditorGizmos::DrawLine(v2(a.x, a.y), v2(a.x, b.y), 2.0f);
-		EditorGizmos::DrawLine(v2(a.x, a.y), v2(b.x, a.y), 2.0f);
-		EditorGizmos::DrawLine(v2(a.x, b.y), v2(b.x, b.y), 2.0f);
-		EditorGizmos::DrawLine(v2(b.x, a.y), v2(b.x, b.y), 2.0f);
+		EditorGizmos::DrawRectOutline(a, b, 2.0f);
 	}
 }
 

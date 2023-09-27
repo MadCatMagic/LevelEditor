@@ -11,6 +11,7 @@ namespace EditorGizmos
 	extern void DrawLine(const v2& startPos, const v2& endPos, float thickness);
 
 	extern void DrawRect(const v2& centre, const v2& size);
+	extern void DrawRectOutline(const v2& bottomRight, const v2& topLeft, float thickness);
 
 	enum GizmosType { Line, Rect };
 

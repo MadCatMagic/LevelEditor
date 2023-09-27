@@ -51,6 +51,14 @@ namespace EditorGizmos
 		gizmosToDraw.push_back(obj);
 	}
 
+	void DrawRectOutline(const v2& bottomRight, const v2& topLeft, float thickness)
+	{
+		DrawLine(bottomRight, v2(bottomRight.x, topLeft.y), thickness);
+		DrawLine(v2(bottomRight.x, topLeft.y), topLeft, thickness);
+		DrawLine(topLeft, v2(topLeft.x, bottomRight.y), thickness);
+		DrawLine(v2(topLeft.x, bottomRight.y), bottomRight, thickness);
+	}
+
 	void DrawLineReal(const v2& startPos, const v2& endPos, float thickness)
 	{
 		// create the vertex data

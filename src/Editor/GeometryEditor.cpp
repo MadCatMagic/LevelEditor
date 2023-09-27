@@ -21,7 +21,7 @@ void GeometryEditor::SetupTools()
     tools.push_back(new BoxGeometryTool(target, "geometry_boxfill_icon.png"));
     tools.push_back(new RotateGeometryTool(target, "geometry_boxfill_icon.png")); // need to add icon
 
-    rend = new SpriteRenderer(100);
+    rend = new SpriteRenderer(-10000);
     rend->pixelScreenSize = v2i(640, 480);
 }
 
@@ -62,12 +62,15 @@ void GeometryEditor::RenderUI()
         compiledGeometry = c.CompileGeometry(0);
     }
 
+    static v2i cc = v2i(20, 20);
+    ImGui::InputInt2("camera centre", &cc.x);
+
     if (ImGui::Button("test renderer"))
     {
         LevelRenderer r = LevelRenderer(target);
         Camera c;
-        c.centre = v2i(20, 20);
-        c.dimensions = v2i(40, 30);
+        c.centre = cc;
+        c.dimensions = v2(40, 30);
         c.pixelSize = v2i(640, 480);
         if (t != nullptr)
             delete t;
