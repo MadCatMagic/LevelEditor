@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Compiler\LevelRenderer.cpp" />
     <ClCompile Include="src\Editor\LogicEditor.cpp" />
     <ClCompile Include="src\Editor\LevelMaterial.cpp" />
     <ClCompile Include="src\Editor\EditorTool.cpp" />
@@ -58,6 +59,7 @@
     <ClCompile Include="src\Maths\Vector4i.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Compiler\LevelRenderer.h" />
     <ClInclude Include="include\Editor\EditorTool.h" />
     <ClInclude Include="include\Compiler\FileManager.h" />
     <ClInclude Include="include\Compiler\Compiler.h" />
