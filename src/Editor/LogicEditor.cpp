@@ -1,9 +1,21 @@
 #include "Editor/LogicEditor.h"
 #include "Editor/EditorGizmos.h"
 
+#include "Engine/SpriteRenderer.h"
+#include "Engine/PixelTexture2D.h"
+#include "Compiler/LevelRenderer.h"
+
 #include "imgui.h"
 
 LogicInspector* LogicTool::inspector = nullptr;
+
+LogicEditor::~LogicEditor()
+{
+	if (tex != nullptr)
+		delete tex;
+	if (renderer != nullptr)
+		delete renderer;
+}
 
 void LogicEditor::SetupTools()
 {
@@ -12,24 +24,26 @@ void LogicEditor::SetupTools()
 
 	tools.push_back(new EntityPlaceTool(target, "geometry_draw_icon.png"));
 	tools.push_back(new TriggerEditTool(target, "geometry_draw_icon.png"));
-	tools.push_back(new TriggerGroupTool(target, "geometry_draw_icon.png"));
+
+	renderer = new SpriteRenderer(-10000);
+	renderer->pixelScreenSize = v2i(640, 480);
 }
 
 void LogicEditor::Render()
 {
 	// first draw entities
-	for (const Entity& e : target->entities)
+	for (Entity* e : target->entities)
 	{
-		EditorGizmos::SetColour(e.editorColour);
-		EditorGizmos::DrawRect((v2)e.position + v2::one * 0.5f, v2::one * 0.8f);
+		EditorGizmos::SetColour(e->editorColour);
+		EditorGizmos::DrawRect((v2)e->position + v2::one * 0.5f, v2::one * 0.8f);
 	}
 
 	// then triggers
-	for (const AreaTrigger& t : target->triggers)
+	for (AreaTrigger* t : target->triggers)
 	{
-		EditorGizmos::SetColour(t.editorColour * 0.5f);
-		v2 diff = (v2)t.topRight + v2::one - (v2)t.bottomLeft;
-		EditorGizmos::DrawRect((v2)t.bottomLeft + diff * 0.5f, diff);
+		EditorGizmos::SetColour(t->editorColour * 0.5f);
+		v2 diff = (v2)t->topRight + v2::one - (v2)t->bottomLeft;
+		EditorGizmos::DrawRect((v2)t->bottomLeft + diff * 0.5f, diff);
 	}
 
 	// then outline selected
@@ -38,11 +52,33 @@ void LogicEditor::Render()
 		v4 p = inspector.GetBoundsOfSelected();
 		EditorGizmos::SetColour(v4(0.8f, 1.0f, 0.2f, 1.0f));
 		EditorGizmos::DrawRectOutline(v2(p.x, p.y), v2(p.z, p.w), 4.0f);
+
+		inspector.DrawGizmosOfSelected();
+	}
+
+	if (tex != nullptr)
+	{
+		renderer->SetTexture(tex->GetTexture());
 	}
 }
 
 void LogicEditor::RenderUI()
 {
+	static v2i cc = v2i(20, 20);
+	ImGui::InputInt2("camera centre", &cc.x);
+
+	if (ImGui::Button("test renderer"))
+	{
+		LevelRenderer r = LevelRenderer(target);
+		Camera c;
+		c.position = cc;
+		c.dimensions = v2(40, 30);
+		c.pixelSize = v2i(640, 480);
+		if (tex != nullptr)
+			delete tex;
+		tex = r.RenderCamera(c);
+	}
+
 	inspector.DrawUI();
 }
 
@@ -53,7 +89,7 @@ void LogicEditor::OnReload()
 void LogicEditor::DeleteTrigger(AreaTrigger* t)
 {
 	for (int i = 0; i < target->triggers.size(); i++)
-		if (&target->triggers[i] == t)
+		if (target->triggers[i] == t)
 		{
 			target->triggers.erase(target->triggers.begin() + i);
 			break;
@@ -63,7 +99,7 @@ void LogicEditor::DeleteTrigger(AreaTrigger* t)
 void LogicEditor::DeleteEntity(Entity* e)
 {
 	for (int i = 0; i < target->entities.size(); i++)
-		if (&target->entities[i] == e)
+		if (target->entities[i] == e)
 		{
 			target->entities.erase(target->entities.begin() + i);
 			break;
@@ -89,12 +125,16 @@ void LogicInspector::DrawUI()
 			SetEditorColour(colourRaw);
 
 		if (!entityTarget)
+		{
 			if (ImGui::Button("Delete Trigger"))
 			{
 				editor->DeleteTrigger(triggerTarget);
 				triggerTarget = nullptr;
 				targetSelected = false;
 			}
+		}
+		else
+			entityTarget->UI();
 	}
 }
 
@@ -128,6 +168,12 @@ v4 LogicInspector::GetBoundsOfSelected() const
 		return v4(entityTarget->position.x, entityTarget->position.y, entityTarget->position.x + 1, entityTarget->position.y + 1);
 	else
 		return v4(triggerTarget->bottomLeft.x, triggerTarget->bottomLeft.y, triggerTarget->topRight.x + 1, triggerTarget->topRight.y + 1);
+}
+
+void LogicInspector::DrawGizmosOfSelected()
+{
+	if (targetIsEntity)
+		entityTarget->Gizmos();
 }
 
 void LogicInspector::DeleteEntity(Entity* e)
@@ -182,7 +228,7 @@ void EntityPlaceTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 	bool occupied = false;
 	int index = 0;
 	for (int i = 0; i < level->entities.size(); i++)
-		if (level->entities[i].position == pos)
+		if (level->entities[i]->position == pos)
 		{
 			occupied = true;
 			index = i;
@@ -191,22 +237,22 @@ void EntityPlaceTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 
 	if (shift && occupied)
 	{
-		inspector->DeleteEntity(&level->entities[index]);
+		inspector->DeleteEntity(level->entities[index]);
 		return;
 	}
 
 	if (!shift && !occupied)
 	{
-		Entity entity;
-		entity.name = "Entity";
-		entity.position = pos;
+		Entity* entity = new Entity();
+		entity->name = "Entity";
+		entity->position = pos;
 		level->entities.push_back(entity);
-		inspector->SetTarget(&level->entities[level->entities.size() - 1]);
+		inspector->SetTarget(level->entities[level->entities.size() - 1]);
 	}
 
 	if (occupied)
 	{
-		inspector->SetTarget(&level->entities[index]);
+		inspector->SetTarget(level->entities[index]);
 	}
 }
 
@@ -217,7 +263,7 @@ void TriggerEditTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 		holding = true;
 		startPos = pos;
 	}
-	else
+	else if (shift)
 	{
 		int start = 0;
 		for (int i = 0; i < level->triggers.size(); i++)
@@ -230,9 +276,9 @@ void TriggerEditTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 		for (int i = start; i < start + level->triggers.size(); i++)
 		{
 			auto &t = level->triggers[i % level->triggers.size()];
-			if (t.bottomLeft.x <= pos.x && pos.x <= t.topRight.x && t.bottomLeft.y <= pos.y && pos.y <= t.topRight.y)
+			if (t->bottomLeft.x <= pos.x && pos.x <= t->topRight.x && t->bottomLeft.y <= pos.y && pos.y <= t->topRight.y)
 			{
-				inspector->SetTarget(&level->triggers[i % level->triggers.size()]);
+				inspector->SetTarget(level->triggers[i % level->triggers.size()]);
 				break;
 			}
 		}
@@ -257,16 +303,12 @@ void TriggerEditTool::OnReleaseClick(bool shift, bool ctrl, const v2i& pos)
 {
 	if (holding)
 	{
-		AreaTrigger t;
-		t.bottomLeft = v2i(std::min(pos.x, startPos.x), std::min(pos.y, startPos.y));
-		t.topRight = v2i(std::max(pos.x, startPos.x), std::max(pos.y, startPos.y));
-		t.name = "Trigger";
+		AreaTrigger* t = new AreaTrigger();
+		t->bottomLeft = v2i(std::min(pos.x, startPos.x), std::min(pos.y, startPos.y));
+		t->topRight = v2i(std::max(pos.x, startPos.x), std::max(pos.y, startPos.y));
+		t->name = "Trigger";
 		level->triggers.push_back(t);
-		inspector->SetTarget(&level->triggers[level->triggers.size() - 1]);
+		inspector->SetTarget(level->triggers[level->triggers.size() - 1]);
 		holding = false;
 	}
-}
-
-void TriggerGroupTool::OnClick(bool shift, bool ctrl, const v2i& pos)
-{
 }

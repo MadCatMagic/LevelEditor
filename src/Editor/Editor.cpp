@@ -50,11 +50,7 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
     editors.push_back(new GeometryEditor(level, this));
     editors.push_back(new MaterialEditor(level, this));
     editors.push_back(new LogicEditor(level, this));
-
-    // setup tools
-    layerTool = new LayerTool(target, "geometry_boxfill_icon.png");
-    currentLayer = layerTool->GetCurrentLayer(); // maybe works
-    selectedTool = layerTool;
+    ChangeEditor(EditorMode::Geometry);
 
     for (int i = 0; i < editors.size(); i++)
         editors[i]->SetupTools();
@@ -73,18 +69,31 @@ void Editor::Update()
     v2 pixelPos = v2(Input::cursorPosX, winSize.y - Input::cursorPosY);
     v2 pos = PixelToWorld(pixelPos);
 
+    if (Input::GetKeyDown(Input::Key::COMMA))
+        currentLayer--;
+    else if (Input::GetKeyDown(Input::Key::DOT))
+        currentLayer++;
+
+    if (currentLayer < 0)
+        currentLayer = 0;
+    else if (currentLayer >= TILE_CHUNK_LAYERS)
+        currentLayer = TILE_CHUNK_LAYERS - 1;
+
     // do tools stuff first
     for each (auto & tool in editors[mode]->tools)
-        tool->SetLayer(*currentLayer);
+        tool->SetLayer(currentLayer);
 
-    bool shift = Input::GetKey(Input::Key::LSHIFT);
-    bool ctrl = Input::GetKey(Input::Key::LCONTROL);
-    if (Input::GetMouseButtonDown(0))
-        selectedTool->OnClick(shift, ctrl, v2i(pos));
-    else if (Input::GetMouseButton(0))
-        selectedTool->OnHoldClick(shift, ctrl, v2i(pos));
-    else if (Input::GetMouseButtonUp(0))
-        selectedTool->OnReleaseClick(shift, ctrl, v2i(pos));
+    if (selectedTool != nullptr)
+    {
+        bool shift = Input::GetKey(Input::Key::LSHIFT);
+        bool ctrl = Input::GetKey(Input::Key::LCONTROL);
+        if (Input::GetMouseButtonDown(0))
+            selectedTool->OnClick(shift, ctrl, v2i(pos));
+        else if (Input::GetMouseButton(0))
+            selectedTool->OnHoldClick(shift, ctrl, v2i(pos));
+        else if (Input::GetMouseButtonUp(0))
+            selectedTool->OnReleaseClick(shift, ctrl, v2i(pos));
+    }
 
     // now do translation and zooming
     if (Input::GetMouseButton(1))
@@ -126,7 +135,7 @@ void Editor::Render(RenderTexture* target)
                 spriteRenderers[i].SetScale(viewerScale);
 
                 // make checkerboard pattern
-                float v = vc * (float)(TILE_CHUNK_LAYERS - abs(l - *currentLayer)) / (float)TILE_CHUNK_LAYERS;
+                float v = vc * (float)(TILE_CHUNK_LAYERS - abs(l - currentLayer)) / (float)TILE_CHUNK_LAYERS;
                 spriteRenderers[i].tint = v4(v, v, v, v);
 
                 // ensure it renders properly
@@ -155,7 +164,7 @@ void Editor::RenderUI(ImGuiIO* io)
     ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
     ImGui::Text(("viewerPosition: " + viewerPosition.ToString() + " viewerScale: " + viewerScale.ToString()).c_str());
-    ImGui::Text(("layer: " + std::to_string(*currentLayer)).c_str());
+    ImGui::Text(("layer: " + std::to_string(currentLayer)).c_str());
     //ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
     //ImGui::Checkbox("Another Window", &show_another_window);
 
@@ -178,29 +187,23 @@ void Editor::RenderUI(ImGuiIO* io)
         ChangeEditor(EditorMode::Logic);
 
     // tool option menu
-    for (int i = -1; i < (int)editors[mode]->tools.size(); i++)
+    for (int i = 0; i < (int)editors[mode]->tools.size(); i++)
     {
         ImGui::PushID(i); // probably not that necessary
-        unsigned int targetTex;
-        if (i == -1)
-            targetTex = layerTool->GetTextureID();
-        else
-            targetTex = editors[mode]->tools[i]->GetTextureID();
+        unsigned int targetTex = editors[mode]->tools[i]->GetTextureID();
 
         if (ImGui::ImageButton(
             "",
             (void*)targetTex,//(void*)tools[i]->GetTextureID(),
-            ImVec2(16.0f, 16.0f),           // size of the image
+            ImVec2(32.0f, 32.0f),           // size of the image
             ImVec2(0.0f, 0.0f),             // uv coordinates for lower left
             ImVec2(1.0f, 1.0f),             // uv coordinates for top right
             ImVec4(0.0f, 0.0f, 0.0f, 1.0f), // black background
             ImVec4(1.0f, 1.0f, 1.0f, 1.0f)  // no tint
         ))
         {
-            if (i != -1)
-                selectedTool = editors[mode]->tools[i];
-            else
-                selectedTool = layerTool;
+            selectedTool = editors[mode]->tools[i];
+            editors[mode]->selectedTool = i;
         }
         ImGui::PopID();
         ImGui::SameLine();
@@ -254,7 +257,7 @@ v2 Editor::ScreenToPixel(const v2& p) const
 
 int Editor::GetIndex(const v2i& pos) const
 {
-    return GetIndex(pos.x, pos.y, *currentLayer);
+    return GetIndex(pos.x, pos.y, currentLayer);
 }
 
 int Editor::GetIndex(int x, int y, int layer) const
@@ -298,4 +301,8 @@ void Editor::ReloadLevel(Level* l)
 void Editor::ChangeEditor(EditorMode newMode)
 {
     mode = newMode;
+    if (editors[mode]->tools.size() != 0)
+        selectedTool = editors[mode]->tools[editors[mode]->selectedTool];
+    else
+        selectedTool = nullptr;
 }

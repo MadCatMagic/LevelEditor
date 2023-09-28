@@ -16,6 +16,7 @@ public:
 
 	v4 GetBoundsOfSelected() const;
 	inline bool IsAnythingSelected() const { return targetSelected; }
+	void DrawGizmosOfSelected();
 
 	void DeleteEntity(Entity* e);
 
@@ -44,6 +45,7 @@ class LogicEditor : public SpecificEditor
 {
 public:
 	using SpecificEditor::SpecificEditor;
+	~LogicEditor();
 
 	void SetupTools() override;
 	void Render() override;
@@ -55,6 +57,9 @@ public:
 
 private:
 	LogicInspector inspector;
+
+	class SpriteRenderer* renderer = nullptr;
+	class PixelTexture2D* tex = nullptr;
 };
 
 class LogicTool : public EditorTool
@@ -77,7 +82,6 @@ public:
 	void OnClick(bool shift, bool ctrl, const v2i& pos) override;
 };
 
-// todo
 class TriggerEditTool : public LogicTool
 {
 public:
@@ -90,13 +94,4 @@ public:
 private:
 	bool holding = false;
 	v2i startPos;
-};
-
-// todo
-class TriggerGroupTool : public LogicTool
-{
-public:
-	using LogicTool::LogicTool;
-
-	void OnClick(bool shift, bool ctrl, const v2i& pos) override;
 };

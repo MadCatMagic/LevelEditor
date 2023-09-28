@@ -30,10 +30,10 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 
 v2i LevelRenderer::WorldToPixel(const v2& position) const
 {
-	return (v2i)v2::Scale(v2::Scale((position - cam.centre), v2::Reciprocal(cam.dimensions)) + v2::one * 0.5f, cam.pixelSize);
+	return (v2i)v2::Scale(v2::Scale((position - cam.position), v2::Reciprocal(cam.dimensions)) + v2::one * 0.5f, cam.pixelSize);
 }
 
 v2 LevelRenderer::PixelToWorld(const v2i& position) const
 {
-	return v2::Scale(v2::Scale(position, v2::Reciprocal(cam.pixelSize)) - v2::one * 0.5f, cam.dimensions) + cam.centre;
+	return v2::Scale(v2::Scale(position, v2::Reciprocal(cam.pixelSize)) - v2::one * 0.5f, cam.dimensions) + cam.position;
 }

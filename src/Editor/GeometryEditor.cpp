@@ -4,25 +4,12 @@
 #include "Editor/EditorGizmos.h"
 #include "imgui.h"
 
-#include "Compiler/LevelRenderer.h"
-#include "Engine/SpriteRenderer.h"
-
-GeometryEditor::~GeometryEditor()
-{
-    if (t != nullptr)
-        delete t;
-    if (rend != nullptr)
-        delete rend;
-}
 
 void GeometryEditor::SetupTools()
 {
     tools.push_back(new DrawGeometryTool(target, "geometry_draw_icon.png"));
     tools.push_back(new BoxGeometryTool(target, "geometry_boxfill_icon.png"));
     tools.push_back(new RotateGeometryTool(target, "geometry_boxfill_icon.png")); // need to add icon
-
-    rend = new SpriteRenderer(-10000);
-    rend->pixelScreenSize = v2i(640, 480);
 }
 
 void GeometryEditor::Render()
@@ -46,11 +33,6 @@ void GeometryEditor::Render()
         for (int i = 0; i < (int)segment.vec.size() - segment.isLoop * 3 - 1; i++)
             EditorGizmos::DrawLine(segment.vec[i], segment.vec[i + 1], 2.0f);
     }
-    
-    if (t != nullptr)
-    {
-        rend->SetTexture(t->GetTexture());
-    }
 }
 
 void GeometryEditor::RenderUI()
@@ -60,21 +42,6 @@ void GeometryEditor::RenderUI()
     {
         Compiler c = Compiler(target);
         compiledGeometry = c.CompileGeometry(0);
-    }
-
-    static v2i cc = v2i(20, 20);
-    ImGui::InputInt2("camera centre", &cc.x);
-
-    if (ImGui::Button("test renderer"))
-    {
-        LevelRenderer r = LevelRenderer(target);
-        Camera c;
-        c.centre = cc;
-        c.dimensions = v2(40, 30);
-        c.pixelSize = v2i(640, 480);
-        if (t != nullptr)
-            delete t;
-        t = r.RenderCamera(c);
     }
 }
 

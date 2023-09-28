@@ -60,3 +60,11 @@ TileChunk::TileChunk()
 			tiles[0][x][y].solid = true;
 		}
 }
+
+void Camera::UI()
+{
+}
+
+void Camera::Gizmos()
+{
+}

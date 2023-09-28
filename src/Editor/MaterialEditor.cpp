@@ -43,7 +43,7 @@ void MaterialEditor::Render()
 void MaterialEditor::RenderUI()
 {
 	static int currentTab = 0;
-	if (ImGui::Button("Previous Tab <--"))
+	if (ImGui::Button("Prev Tab <--"))
 		currentTab = (currentTab + 15) % mats->GetNumPages(); // negative % positive = negative which is wrong
 	ImGui::SameLine();
 	if (ImGui::Button("--> Next Tab"))

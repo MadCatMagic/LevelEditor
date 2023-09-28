@@ -33,6 +33,18 @@ struct Entity
 	std::string name;
 
 	v4 editorColour = v4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	inline virtual void UI() { };
+	inline virtual void Gizmos() { };
+};
+
+struct Camera : Entity
+{
+	v2 dimensions = v2::one;
+	v2i pixelSize = v2i::one * 16;
+
+	void UI() override;
+	void Gizmos() override;
 };
 
 struct AreaTrigger
@@ -62,8 +74,8 @@ public:
 	bool ValidPosition(const v2i& pos) const;
 
 	// quite exposed
-	std::vector<Entity> entities;
-	std::vector<AreaTrigger> triggers;
+	std::vector<Entity*> entities;
+	std::vector<AreaTrigger*> triggers;
 
 private:
 	void CreateChunk(const v2i& chunkPos);

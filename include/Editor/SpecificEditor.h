@@ -24,6 +24,8 @@ public:
 
 	friend class Editor;
 
+	int selectedTool = 0;
+
 protected:
 	std::vector<EditorTool*> tools;
 

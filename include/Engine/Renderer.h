@@ -7,7 +7,6 @@
 
 class Texture2D;
 class RenderTexture;
-class Camera;
 class Light;
 class Material;
 

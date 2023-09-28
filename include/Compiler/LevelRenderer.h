@@ -1,17 +1,11 @@
 #pragma once
 #include "Engine/PixelTexture2D.h"
-
-struct Camera
-{
-	v2i centre;
-	v2 dimensions = v2::one;
-	v2i pixelSize = v2i::one * 16;
-};
+#include "Editor/Level.h"
 
 class LevelRenderer
 {
 public:
-	LevelRenderer(class Level* l);
+	LevelRenderer(Level* l);
 
 	// the caller owns the return value
 	PixelTexture2D* RenderCamera(Camera cam);

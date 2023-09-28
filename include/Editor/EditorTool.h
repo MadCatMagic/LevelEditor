@@ -23,16 +23,3 @@ protected:
 private:
 	class Texture2D* sprite;
 };
-
-class LayerTool : public EditorTool
-{
-public:
-	using EditorTool::EditorTool;
-
-	void OnClick(bool shift, bool ctrl, const v2i& pos) override;
-
-	inline int* GetCurrentLayer() { return &currentLayer; }
-
-private:
-	int currentLayer = 0;
-};

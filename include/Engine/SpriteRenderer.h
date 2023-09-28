@@ -56,7 +56,7 @@ private:
 
 	struct CustomHash {
 		inline auto operator()(int i) const -> size_t {
-			return i * 1245839;
+			return (size_t)i * 1245839;
 		}
 	};
 
