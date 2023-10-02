@@ -16,7 +16,31 @@ void FileManager::ExportLevel(Level* level, const std::string& filename)
 void FileManager::SaveLevel(Level* level, const std::string& filename)
 {
     std::stringstream stream;
+    // first dump the entity data
+    for each (Entity* e in level->entities)
+    {
+        stream << e->GetType() << ";";
+        stream << std::to_string(e->position.x) << "," << std::to_string(e->position.y) << "," << e->name << ",";
+        stream << std::to_string(e->editorColour.x) << "," << std::to_string(e->editorColour.y) << ",";
+        stream << std::to_string(e->editorColour.z) << "," << std::to_string(e->editorColour.w) << ",";
+        for each (const std::string & segment in e->SaveData())
+            stream << segment << ",";
+        stream << ";";
+    }
+    stream << "~";
 
+    // then areatrigger data
+    for each (AreaTrigger* t in level->triggers)
+    {
+        stream << std::to_string(t->bottomLeft.x) << "," << std::to_string(t->bottomLeft.y) << ",";
+        stream << std::to_string(t->topRight.x) << "," << std::to_string(t->topRight.y) << ",";
+        stream << std::to_string(t->editorColour.x) << "," << std::to_string(t->editorColour.y) << ",";
+        stream << std::to_string(t->editorColour.z) << "," << std::to_string(t->editorColour.w) << ",";
+        stream << t->name << ";";
+    }
+    stream << "~";
+
+    // actual level geometry comes afterwards
     for each (TileChunk* c in level->chunks)
     {
         stream << "c#" << std::to_string(c->chunkPos.x) << "," << std::to_string(c->chunkPos.y) << "#";
@@ -46,15 +70,113 @@ Level* FileManager::LoadLevel(const std::string& filename)
         return nullptr;
     }
 
+    Level* level = new Level(v2i::zero);
+
+    // entity data
+    char c;
+    // 0: pos.x, 1: pos.y, 2: name, then go until end
+    int readingState = 0;
+
+    std::string accumulate;
+    std::vector<std::string> bitsNBobs;
+
+    // load entity stuff
+    Entity* e = nullptr;
+    
+    while (stream.get(c))
+    {
+        if (c == '~')
+            break;
+        else if (c == ';')
+        {
+            if (accumulate == "")
+            {
+                e->LoadData(bitsNBobs);
+                level->entities.push_back(e);
+                e = nullptr;
+                readingState = 0;
+            }
+            else
+                e = Entity::CreateEntityFromName(accumulate);
+            accumulate = "";
+        }
+        else if (c == ',')
+        {
+            if (readingState == 0)
+                e->position.x = std::stof(accumulate);
+            else if (readingState == 1)
+                e->position.y = std::stof(accumulate);
+            else if (readingState == 2)
+                e->name = accumulate;
+            else if (readingState == 3)
+                e->editorColour.x = std::stof(accumulate);
+            else if (readingState == 4)
+                e->editorColour.y = std::stof(accumulate);
+            else if (readingState == 5)
+                e->editorColour.z = std::stof(accumulate);
+            else if (readingState == 6)
+                e->editorColour.w = std::stof(accumulate);
+            else
+                bitsNBobs.push_back(accumulate);
+
+            readingState++;
+            accumulate = "";
+        }
+        else
+            accumulate += c;
+    }
+
+    // load trigger stuff
+    AreaTrigger* t = new AreaTrigger();
+    readingState = 0;
+    while (stream.get(c))
+    {
+        if (c == '~')
+            break;
+        else if (c == ';')
+        {
+            t->name = accumulate;
+            level->triggers.push_back(t);
+            t = new AreaTrigger();
+            readingState = 0;
+            accumulate = "";
+        }
+        else if (c == ',')
+        {
+            if (readingState == 0)
+                t->bottomLeft.x = std::stof(accumulate);
+            else if (readingState == 1)
+                t->bottomLeft.y = std::stof(accumulate);
+            else if (readingState == 2)
+                t->topRight.x = std::stof(accumulate);
+            else if (readingState == 3)
+                t->topRight.y = std::stof(accumulate);
+            else if (readingState == 4)
+                t->editorColour.x = std::stof(accumulate);
+            else if (readingState == 5)
+                t->editorColour.y = std::stof(accumulate);
+            else if (readingState == 6)
+                t->editorColour.z = std::stof(accumulate);
+            else if (readingState == 7)
+                t->editorColour.w = std::stof(accumulate);
+
+            readingState++;
+            accumulate = "";
+        }
+        else
+            accumulate += c;
+    }
+    delete t;
+    
+    // geometry data
+    // scary
     bool readingChunkPos = false;
     int tileIndex = 0;
-    int layer = 0;
+    int layer = 0;                          
     int tileScanProgress = 0;
 
     std::string chunkPos;
     TileChunk* chunk = nullptr;
-
-    Level* level = new Level(v2i::zero);
 
     v2i min;
     v2i max;
@@ -62,7 +184,6 @@ Level* FileManager::LoadLevel(const std::string& filename)
     v2i pos;
     std::string materialBuffer;
 
-    char c;
     while (stream.get(c))
     {
         if (c == 'c')

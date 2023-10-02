@@ -276,7 +276,7 @@ void EntityPlaceTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 
 	if (!shift && !occupied)
 	{
-		Entity* entity = toPlace->CreateEntity();
+		Entity* entity = toPlace->CreateEntityFromName(toPlace->GetType());
 		entity->name = toPlace->GetType();
 		entity->position = pos;
 		level->entities.push_back(entity);

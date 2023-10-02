@@ -38,8 +38,12 @@ struct Entity
 	inline virtual void Gizmos() { };
 
 	virtual inline std::string GetType() const { return "Entity"; }
-	virtual inline Entity* CreateEntity() const { return new Entity(); }
 	virtual inline bool PlaceAtCentreOfTile() const { return true; }
+
+	virtual inline std::vector<std::string> SaveData() const { return std::vector<std::string>(); }
+	virtual inline void LoadData(std::vector<std::string> data) { }
+
+	static Entity* CreateEntityFromName(const std::string& name);
 };
 
 struct Camera : Entity
@@ -51,8 +55,10 @@ struct Camera : Entity
 	void Gizmos() override;
 
 	inline std::string GetType() const override { return "Camera"; }
-	inline Entity* CreateEntity() const override { return new Camera(); }
 	inline bool PlaceAtCentreOfTile() const { return false; }
+
+	std::vector<std::string> SaveData() const;
+	void LoadData(std::vector<std::string> data);
 };
 
 struct AreaTrigger
