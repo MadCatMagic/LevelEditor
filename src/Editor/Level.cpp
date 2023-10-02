@@ -1,5 +1,8 @@
 #include "Editor/Level.h"
 
+#include "imgui.h"
+#include "Editor/EditorGizmos.h"
+
 Level::Level(const v2i& chunkDimensions)
 {
 	this->dimensions = chunkDimensions * TILE_CHUNK_SIZE;
@@ -63,8 +66,14 @@ TileChunk::TileChunk()
 
 void Camera::UI()
 {
+	ImGui::InputFloat2("Dimensions", &dimensions.x);
+	ImGui::InputInt2("Pixel Size", &pixelSize.x);
 }
 
 void Camera::Gizmos()
 {
+	EditorGizmos::SetColour(editorColour);
+	EditorGizmos::DrawLine(position - dimensions * 0.5f, position + dimensions * 0.5f, 2.0f);
+	EditorGizmos::DrawLine(position - v2(dimensions.x, -dimensions.y) * 0.5f, position + v2(dimensions.x, -dimensions.y) * 0.5f, 2.0f);
+	EditorGizmos::DrawRectOutline(position - dimensions * 0.5f, position + dimensions * 0.5f, 2.0f);
 }

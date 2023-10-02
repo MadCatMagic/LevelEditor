@@ -130,7 +130,7 @@ void Editor::Render(RenderTexture* target)
             {
                 // translate from tile space to pixel space
                 int i = GetIndex(x, y, l);
-                v2 targetPos = WorldToPixel(v2(x, y));
+                v2 targetPos = WorldToPixel((v2)v2i(x, y));
                 spriteRenderers[i].SetPixelPos(targetPos);
                 spriteRenderers[i].SetScale(viewerScale);
 

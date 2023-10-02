@@ -22,8 +22,13 @@ void LogicEditor::SetupTools()
 	LogicTool::SetInspector(&inspector);
 	inspector.SetEditor(this);
 
-	tools.push_back(new EntityPlaceTool(target, "geometry_draw_icon.png"));
+	entityPlaceTool = new EntityPlaceTool(target, "geometry_draw_icon.png");
+	tools.push_back(entityPlaceTool);
 	tools.push_back(new TriggerEditTool(target, "geometry_draw_icon.png"));
+
+	baseEntityTypes.push_back(new Entity());
+	baseEntityTypes.push_back(new Camera());
+	entityPlaceTool->SetEntityToPlace(baseEntityTypes[0]);
 
 	renderer = new SpriteRenderer(-10000);
 	renderer->pixelScreenSize = v2i(640, 480);
@@ -79,6 +84,29 @@ void LogicEditor::RenderUI()
 		tex = r.RenderCamera(c);
 	}
 
+	if (selectedTool == 0)
+	{
+		ImGui::NewLine();
+		static int selectedEntityType = 0;
+		if (ImGui::BeginListBox("Entity Type", ImVec2(0.0f, 50.0f)))
+		{
+			for (int n = 0; n < baseEntityTypes.size(); n++)
+			{
+				const bool selected = selectedEntityType == n;
+				if (ImGui::Selectable(baseEntityTypes[n]->GetType().c_str(), selected))
+				{
+					selectedEntityType = n;
+					entityPlaceTool->SetEntityToPlace(baseEntityTypes[n]);
+				}
+
+				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+				if (selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndListBox();
+		}
+	}
+
 	inspector.DrawUI();
 }
 
@@ -91,6 +119,7 @@ void LogicEditor::DeleteTrigger(AreaTrigger* t)
 	for (int i = 0; i < target->triggers.size(); i++)
 		if (target->triggers[i] == t)
 		{
+			delete target->triggers[i];
 			target->triggers.erase(target->triggers.begin() + i);
 			break;
 		}
@@ -101,6 +130,7 @@ void LogicEditor::DeleteEntity(Entity* e)
 	for (int i = 0; i < target->entities.size(); i++)
 		if (target->entities[i] == e)
 		{
+			delete target->entities[i];
 			target->entities.erase(target->entities.begin() + i);
 			break;
 		}
@@ -134,7 +164,10 @@ void LogicInspector::DrawUI()
 			}
 		}
 		else
+		{
+			ImGui::InputFloat2("Position", &entityTarget->position.x);
 			entityTarget->UI();
+		}
 	}
 }
 
@@ -165,9 +198,9 @@ void* LogicInspector::GetTarget() const
 v4 LogicInspector::GetBoundsOfSelected() const
 {
 	if (targetIsEntity)
-		return v4(entityTarget->position.x, entityTarget->position.y, entityTarget->position.x + 1, entityTarget->position.y + 1);
+		return v4(entityTarget->position.x, entityTarget->position.y, entityTarget->position.x + 1.0f, entityTarget->position.y + 1.0f);
 	else
-		return v4(triggerTarget->bottomLeft.x, triggerTarget->bottomLeft.y, triggerTarget->topRight.x + 1, triggerTarget->topRight.y + 1);
+		return v4(triggerTarget->bottomLeft.x, triggerTarget->bottomLeft.y, triggerTarget->topRight.x + 1.0f, triggerTarget->topRight.y + 1.0f);
 }
 
 void LogicInspector::DrawGizmosOfSelected()
@@ -243,8 +276,8 @@ void EntityPlaceTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 
 	if (!shift && !occupied)
 	{
-		Entity* entity = new Entity();
-		entity->name = "Entity";
+		Entity* entity = toPlace->CreateEntity();
+		entity->name = toPlace->GetType();
 		entity->position = pos;
 		level->entities.push_back(entity);
 		inspector->SetTarget(level->entities[level->entities.size() - 1]);

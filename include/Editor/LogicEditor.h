@@ -56,10 +56,14 @@ public:
 	void DeleteEntity(Entity* e);
 
 private:
+	class EntityPlaceTool* entityPlaceTool = nullptr;
+
 	LogicInspector inspector;
 
 	class SpriteRenderer* renderer = nullptr;
 	class PixelTexture2D* tex = nullptr;
+
+	std::vector<Entity*> baseEntityTypes;
 };
 
 class LogicTool : public EditorTool
@@ -80,6 +84,11 @@ public:
 	using LogicTool::LogicTool;
 
 	void OnClick(bool shift, bool ctrl, const v2i& pos) override;
+
+	inline void SetEntityToPlace(Entity* e) { toPlace = e; }
+
+private:
+	Entity* toPlace = nullptr;
 };
 
 class TriggerEditTool : public LogicTool

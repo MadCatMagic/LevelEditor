@@ -29,13 +29,17 @@ struct TileChunk
 
 struct Entity
 {
-	v2i position;
+	v2 position;
 	std::string name;
 
 	v4 editorColour = v4(1.0f, 0.0f, 0.0f, 1.0f);
 
 	inline virtual void UI() { };
 	inline virtual void Gizmos() { };
+
+	virtual inline std::string GetType() const { return "Entity"; }
+	virtual inline Entity* CreateEntity() const { return new Entity(); }
+	virtual inline bool PlaceAtCentreOfTile() const { return true; }
 };
 
 struct Camera : Entity
@@ -45,6 +49,10 @@ struct Camera : Entity
 
 	void UI() override;
 	void Gizmos() override;
+
+	inline std::string GetType() const override { return "Camera"; }
+	inline Entity* CreateEntity() const override { return new Camera(); }
+	inline bool PlaceAtCentreOfTile() const { return false; }
 };
 
 struct AreaTrigger

@@ -36,7 +36,7 @@ void MaterialEditor::Render()
 
 			v4 col = v4(mats->GetMaterialColour(t->material));
 			EditorGizmos::SetColour(col);
-			EditorGizmos::DrawRect(v2(x, y) + v2::one * 0.5f, v2::one * 0.5f);
+			EditorGizmos::DrawRect((v2)v2i(x, y) + v2::one * 0.5f, v2::one * 0.5f);
 		}
 }
 

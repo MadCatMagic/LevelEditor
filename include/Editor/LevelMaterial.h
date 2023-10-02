@@ -19,7 +19,7 @@ public:
 	v3 GetMaterialColour(int id);
 	std::string GetMaterialName(int id);
 
-	inline int GetNumPages() { return pages.size(); };
+	inline int GetNumPages() { return (int)pages.size(); };
 	int GetPageLength(int page);
 	std::string GetPageName(int page);
 
