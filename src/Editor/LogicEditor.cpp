@@ -1,8 +1,6 @@
 #include "Editor/LogicEditor.h"
 #include "Editor/EditorGizmos.h"
 
-#include "Engine/SpriteRenderer.h"
-#include "Engine/PixelTexture2D.h"
 #include "Compiler/LevelRenderer.h"
 
 #include "imgui.h"
@@ -11,10 +9,7 @@ LogicInspector* LogicTool::inspector = nullptr;
 
 LogicEditor::~LogicEditor()
 {
-	if (tex != nullptr)
-		delete tex;
-	if (renderer != nullptr)
-		delete renderer;
+	Camera::_Release();
 }
 
 void LogicEditor::SetupTools()
@@ -29,9 +24,6 @@ void LogicEditor::SetupTools()
 	baseEntityTypes.push_back(new Entity());
 	baseEntityTypes.push_back(new Camera());
 	entityPlaceTool->SetEntityToPlace(baseEntityTypes[0]);
-
-	renderer = new SpriteRenderer(-10000);
-	renderer->pixelScreenSize = v2i(640, 480);
 }
 
 void LogicEditor::Render()
@@ -40,7 +32,7 @@ void LogicEditor::Render()
 	for (Entity* e : target->entities)
 	{
 		EditorGizmos::SetColour(e->editorColour);
-		EditorGizmos::DrawRect((v2)e->position + v2::one * 0.5f, v2::one * 0.8f);
+		EditorGizmos::DrawRect((v2)e->position + (e->PlaceAtCentreOfTile() ? v2::one * 0.5f : 0.0f), v2::one * 0.8f);
 	}
 
 	// then triggers
@@ -60,30 +52,10 @@ void LogicEditor::Render()
 
 		inspector.DrawGizmosOfSelected();
 	}
-
-	if (tex != nullptr)
-	{
-		renderer->SetTexture(tex->GetTexture());
-	}
 }
 
 void LogicEditor::RenderUI()
 {
-	static v2i cc = v2i(20, 20);
-	ImGui::InputInt2("camera centre", &cc.x);
-
-	if (ImGui::Button("test renderer"))
-	{
-		LevelRenderer r = LevelRenderer(target);
-		Camera c;
-		c.position = cc;
-		c.dimensions = v2(40, 30);
-		c.pixelSize = v2i(640, 480);
-		if (tex != nullptr)
-			delete tex;
-		tex = r.RenderCamera(c);
-	}
-
 	if (selectedTool == 0)
 	{
 		ImGui::NewLine();
@@ -112,6 +84,7 @@ void LogicEditor::RenderUI()
 
 void LogicEditor::OnReload()
 {
+	inspector.SetLevel(target);
 }
 
 void LogicEditor::DeleteTrigger(AreaTrigger* t)
@@ -166,7 +139,7 @@ void LogicInspector::DrawUI()
 		else
 		{
 			ImGui::InputFloat2("Position", &entityTarget->position.x);
-			entityTarget->UI();
+			entityTarget->UI(level);
 		}
 	}
 }
@@ -198,7 +171,11 @@ void* LogicInspector::GetTarget() const
 v4 LogicInspector::GetBoundsOfSelected() const
 {
 	if (targetIsEntity)
-		return v4(entityTarget->position.x, entityTarget->position.y, entityTarget->position.x + 1.0f, entityTarget->position.y + 1.0f);
+	{
+		v2 bl = entityTarget->position - (entityTarget->PlaceAtCentreOfTile() ? 0.5f : 0.0f);
+		v2 tr = entityTarget->position + (entityTarget->PlaceAtCentreOfTile() ? 0.5f : 1.0f);
+		return v4(bl.x, bl.y, tr.x, tr.y);
+	}
 	else
 		return v4(triggerTarget->bottomLeft.x, triggerTarget->bottomLeft.y, triggerTarget->topRight.x + 1.0f, triggerTarget->topRight.y + 1.0f);
 }

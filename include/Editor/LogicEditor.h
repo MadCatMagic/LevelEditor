@@ -13,6 +13,7 @@ public:
 
 	void* GetTarget() const;
 	inline void SetEditor(LogicEditor* e) { editor = e; };
+	inline void SetLevel(Level* l) { level = l; }
 
 	v4 GetBoundsOfSelected() const;
 	inline bool IsAnythingSelected() const { return targetSelected; }
@@ -38,6 +39,7 @@ private:
 	AreaTrigger* triggerTarget = nullptr;
 
 	LogicEditor* editor;
+	Level* level;
 };
 
 
@@ -59,9 +61,6 @@ private:
 	class EntityPlaceTool* entityPlaceTool = nullptr;
 
 	LogicInspector inspector;
-
-	class SpriteRenderer* renderer = nullptr;
-	class PixelTexture2D* tex = nullptr;
 
 	std::vector<Entity*> baseEntityTypes;
 };

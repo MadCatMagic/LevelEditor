@@ -231,6 +231,9 @@ int SpriteRenderer::RenderLayer(int startingIndex)
 
 	for each (const std::pair<int, std::vector<InstanceData>>& pair in instancedData)
 	{
+		if (pair.second.size() == 0)
+			continue;
+
 		glBindTexture(GL_TEXTURE_2D, pair.first);
 		blitInstancingVB->SetData((const void*)pair.second.data(), sizeof(InstanceData) * pair.second.size(), VertexBuffer::UsageHint::StaticDraw);
 		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, pair.second.size());
