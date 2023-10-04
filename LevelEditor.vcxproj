@@ -21,7 +21,6 @@
   <ItemGroup>
     <ClCompile Include="src\Compiler\LevelRenderer.cpp" />
     <ClCompile Include="src\Editor\LogicEditor.cpp" />
-    <ClCompile Include="src\Editor\LevelMaterial.cpp" />
     <ClCompile Include="src\Editor\EditorTool.cpp" />
     <ClCompile Include="src\Editor\GeometryEditor.cpp" />
     <ClCompile Include="src\Editor\MaterialEditor.cpp" />
@@ -34,7 +33,6 @@
     <ClCompile Include="src\Engine\SpriteRenderer.cpp" />
     <ClCompile Include="src\Editor\Editor.cpp" />
     <ClCompile Include="src\Editor\GeometryTool.cpp" />
-    <ClCompile Include="src\Editor\Level.cpp" />
     <ClCompile Include="src\Engine\Engine.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Engine\Mesh\Material.cpp" />
@@ -48,6 +46,9 @@
     <ClCompile Include="src\Engine\Texture\RenderTexture.cpp" />
     <ClCompile Include="src\Engine\Texture\Texture.cpp" />
     <ClCompile Include="src\Engine\Texture\Texture2D.cpp" />
+    <ClCompile Include="src\Level\Entity.cpp" />
+    <ClCompile Include="src\Level\Level.cpp" />
+    <ClCompile Include="src\Level\LevelMaterial.cpp" />
     <ClCompile Include="src\Maths\Matrix4x4.cpp" />
     <ClCompile Include="src\Maths\Quaternion.cpp" />
     <ClCompile Include="src\Maths\Random.cpp" />
@@ -83,14 +84,16 @@
     <ClInclude Include="include\Engine\Texture\RenderTexture.h" />
     <ClInclude Include="include\Engine\Texture\Texture.h" />
     <ClInclude Include="include\Engine\Texture\Texture2D.h" />
+    <ClInclude Include="include\Level\AreaTrigger.h" />
+    <ClInclude Include="include\Level\Entity.h" />
+    <ClInclude Include="include\Level\Level.h" />
+    <ClInclude Include="include\Level\LevelMaterial.h" />
     <ClInclude Include="include\Matrix.h" />
     <ClInclude Include="include\Quaternion.h" />
     <ClInclude Include="include\Random.h" />
     <ClInclude Include="include\Vector.h" />
-    <ClInclude Include="include\Editor\Level.h" />
     <ClInclude Include="include\Engine\SpriteRenderer.h" />
     <ClInclude Include="include\Editor\SpecificEditor.h" />
-    <ClInclude Include="include\Editor\LevelMaterial.h" />
     <ClInclude Include="include\Editor\LogicEditor.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

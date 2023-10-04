@@ -38,7 +38,7 @@ void LogicEditor::Render()
 	// then triggers
 	for (AreaTrigger* t : target->triggers)
 	{
-		EditorGizmos::SetColour(t->editorColour * 0.5f);
+		EditorGizmos::SetColour(v4::Scale(t->editorColour, v4(1.0f, 1.0f, 1.0f, 0.4f)));
 		v2 diff = (v2)t->topRight + v2::one - (v2)t->bottomLeft;
 		EditorGizmos::DrawRect((v2)t->bottomLeft + diff * 0.5f, diff);
 	}

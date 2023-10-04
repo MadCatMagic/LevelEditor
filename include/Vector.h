@@ -96,6 +96,8 @@ struct v4
 	v4(v3 wtobe1);
 	v4(v4i i);
 
+	static v4 Scale(const v4& a, const v4& b);
+
 	static float Dot(const v4& a, const v4& b);
 	static float Magnitude(const v4& a);
 	static float Distance(const v4& a, const v4& b);

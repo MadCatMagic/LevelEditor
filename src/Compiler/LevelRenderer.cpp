@@ -1,5 +1,5 @@
 #include "Compiler/LevelRenderer.h"
-#include "Editor/Level.h"
+#include "Level/Level.h"
 
 LevelRenderer::LevelRenderer(Level* l)
 	: level(l)

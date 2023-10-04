@@ -41,6 +41,11 @@ v4::v4(v4i i)
 	this->w = (float)i.w;
 }
 
+v4 v4::Scale(const v4& a, const v4& b)
+{
+	return v4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
+}
+
 float v4::Dot(const v4& a, const v4& b)
 {
 	return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;

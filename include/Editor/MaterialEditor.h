@@ -1,6 +1,6 @@
 #pragma once
 #include "Editor/SpecificEditor.h"
-#include "Editor/LevelMaterial.h"
+#include "Level/LevelMaterial.h"
 
 class MaterialEditor : public SpecificEditor
 {
