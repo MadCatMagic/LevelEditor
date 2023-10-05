@@ -23,7 +23,7 @@ namespace EditorGizmos
 
 		// Create and compile our GLSL program from the shaders
 		blitShader = new Shader("res/shaders/EditorGizmos.shader");
-		blitMat = new Material(*blitShader);
+		blitMat = new Material(blitShader);
 	}
 
 	void SetColour(const v4& col)

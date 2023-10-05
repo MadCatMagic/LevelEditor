@@ -12,12 +12,11 @@ class Material
 {
 public:
 	Material();
-	Material(Shader& shader);
+	Material(Shader* shader);
 	Material(const Material& obj);
 	Material(Material&& obj) noexcept;
-	~Material();
 
-	void SetShader(Shader& shader);
+	void SetShader(Shader* shader);
 
 	void SetBool(const std::string& name, bool b);
 	void SetBoolArray(const std::string& name, const bool* bools, unsigned int count);
@@ -51,10 +50,10 @@ public:
 	void Bind() const;
 	void Unbind() const;
 
-	inline Shader* GetShaderReference() { return &shader; }
+	inline Shader* GetShaderReference() { return shader; }
 
 private:
-	Shader shader;
+	Shader* shader = nullptr;
 	std::unordered_map <std::string, int> uniformLocations;
 
 	int GetUniformLocation(const std::string& name);

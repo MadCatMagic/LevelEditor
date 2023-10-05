@@ -24,6 +24,7 @@ void Engine::Mainloop(bool debugging)
     {
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
+        winSize = v2i(display_w, display_h);
         glViewport(0, 0, display_w, display_h);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -41,9 +42,8 @@ void Engine::Mainloop(bool debugging)
         glfwPollEvents();
     }
 
-    Release();
-
     Renderer::Release();
+    Release();
 
     glfwDestroyWindow(window);
     glfwTerminate();
@@ -54,7 +54,6 @@ bool Engine::CreateWindow(const v2i& windowSize, const std::string& name)
     ZoneScoped;
 
     this->winSize = windowSize;
-    winProportions = v2((float)winSize.x / (float)winSize.y, 1.0f);
 
     /* Initialize the library */
     if (!glfwInit())
@@ -114,6 +113,7 @@ void Engine::Update()
     ZoneScoped;
 
     // actual stuff first
+    editor._SetWinSize(winSize);
     editor.Update();
     editor.Render(0);
 

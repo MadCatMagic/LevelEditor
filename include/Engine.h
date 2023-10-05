@@ -19,7 +19,6 @@ public:
 
 private:
 	v2i winSize;
-	v2 winProportions;
 
 	GLFWwindow* window = nullptr;
 

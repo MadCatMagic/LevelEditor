@@ -49,7 +49,7 @@ void LogicEditor::Render()
 	{
 		v4 p = inspector.GetBoundsOfSelected();
 		EditorGizmos::SetColour(v4(0.8f, 1.0f, 0.2f, 1.0f));
-		EditorGizmos::DrawRectOutline(v2(p.x, p.y), v2(p.z, p.w), 4.0f);
+		EditorGizmos::DrawRectOutline(v2(p.x, p.y), v2(p.z, p.w), 3.0f);
 
 		inspector.DrawGizmosOfSelected();
 	}
@@ -188,7 +188,7 @@ v4 LogicInspector::GetBoundsOfSelected() const
 		return v4(bl.x, bl.y, tr.x, tr.y);
 	}
 	else
-		return v4(triggerTarget->bottomLeft.x, triggerTarget->bottomLeft.y, triggerTarget->topRight.x + 1.0f, triggerTarget->topRight.y + 1.0f);
+		return (v4)v4i(triggerTarget->bottomLeft.x, triggerTarget->bottomLeft.y, triggerTarget->topRight.x + 1, triggerTarget->topRight.y + 1);
 }
 
 void LogicInspector::DrawGizmosOfSelected()
@@ -254,30 +254,47 @@ v4 LogicInspector::GetEditorColour()
 		return triggerTarget->editorColour;
 }
 
-void EntityPlaceTool::OnClick(bool shift, bool ctrl, const v2i& pos)
+void EntityPlaceTool::OnClick(bool shift, bool ctrl, const v2& exactPos)
 {
-	bool occupied = false;
-	int index = 0;
+	v2 pos = exactPos;
+
+	// try and select an object
+	int start = 0;
 	for (int i = 0; i < level->entities.size(); i++)
-		if (level->entities[i]->position == pos)
+		if (level->entities[i] == inspector->GetTarget())
 		{
-			occupied = true;
-			index = i;
+			start = (i + 1) % level->entities.size();
 			break;
 		}
 
-	if (!occupied)
+	bool found = false;
+	for (int i = start; i < start + level->entities.size(); i++)
+	{
+		auto* t = level->entities[i % level->entities.size()];
+		v2 bl = t->position - (t->PlaceAtCentreOfTile() ? 0.0f : 0.5f);
+		v2 tr = t->position + (t->PlaceAtCentreOfTile() ? 1.0f : 0.5f);
+		if (bl.x <= pos.x && pos.x <= tr.x && bl.y <= pos.y && pos.y <= tr.y)
+		{
+			// set as target normally
+			if (!shift)
+			{
+				inspector->SetTarget(t);
+				return;
+			}
+			// if shift is pressed then set a flag not to create a new entity
+			else
+				found = true;
+		}
+	}
+
+	// create the entity if so
+	if (shift && !found)
 	{
 		Entity* entity = toPlace->CreateEntityFromName(toPlace->GetType());
 		entity->name = toPlace->GetType();
-		entity->position = pos;
+		entity->position = toPlace->PlaceAtCentreOfTile() ? v2i(pos) : v2i(pos + 0.5f);
 		level->entities.push_back(entity);
 		inspector->SetTarget(level->entities[level->entities.size() - 1]);
-	}
-
-	if (occupied)
-	{
-		inspector->SetTarget(level->entities[index]);
 	}
 }
 
@@ -292,7 +309,7 @@ void TriggerEditTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 	{
 		int start = 0;
 		for (int i = 0; i < level->triggers.size(); i++)
-			if (&level->triggers[i] == inspector->GetTarget())
+			if (level->triggers[i] == inspector->GetTarget())
 			{
 				start = (i + 1) % level->triggers.size();
 				break;
@@ -300,10 +317,10 @@ void TriggerEditTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 
 		for (int i = start; i < start + level->triggers.size(); i++)
 		{
-			auto &t = level->triggers[i % level->triggers.size()];
+			auto* t = level->triggers[i % level->triggers.size()];
 			if (t->bottomLeft.x <= pos.x && pos.x <= t->topRight.x && t->bottomLeft.y <= pos.y && pos.y <= t->topRight.y)
 			{
-				inspector->SetTarget(level->triggers[i % level->triggers.size()]);
+				inspector->SetTarget(t);
 				break;
 			}
 		}

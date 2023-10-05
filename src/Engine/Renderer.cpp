@@ -143,7 +143,7 @@ namespace Renderer
         blitVA->DisableAttribute(0);
         // Create and compile our GLSL program from the shaders
         blitShader = new Shader("res/shaders/Blit.shader");
-        blitMat = new Material(*blitShader);
+        blitMat = new Material(blitShader);
     }
 
     // Blit variations

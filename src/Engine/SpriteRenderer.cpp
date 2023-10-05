@@ -41,7 +41,7 @@ SpriteRenderer::SpriteRenderer(int drawlevel)
 	renderers.push_back(this);
 
 	// need to ensure it is inserted at the correct level
-	int i = renderers.size() - 1;
+	int i = (int)renderers.size() - 1;
 	while (i > 0)
 	{
 		// if layer is the same or greater than us then break
@@ -235,8 +235,8 @@ int SpriteRenderer::RenderLayer(int startingIndex)
 			continue;
 
 		glBindTexture(GL_TEXTURE_2D, pair.first);
-		blitInstancingVB->SetData((const void*)pair.second.data(), sizeof(InstanceData) * pair.second.size(), VertexBuffer::UsageHint::StaticDraw);
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, pair.second.size());
+		blitInstancingVB->SetData((const void*)pair.second.data(), sizeof(InstanceData) * (unsigned int)pair.second.size(), VertexBuffer::UsageHint::StaticDraw);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, (GLsizei)pair.second.size());
 
 		instancedData[pair.first].clear();
 	}
@@ -285,7 +285,7 @@ void SpriteRenderer::Initialise()
 	
 	// Create and compile our GLSL program from the shaders
 	blitShader = new Shader("res/shaders/SpriteRenderer.shader");
-	blitMat = new Material(*blitShader);
+	blitMat = new Material(blitShader);
 }
 
 void SpriteRenderer::Release()

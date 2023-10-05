@@ -88,7 +88,10 @@ void Editor::Update()
         bool shift = Input::GetKey(Input::Key::LSHIFT);
         bool ctrl = Input::GetKey(Input::Key::LCONTROL);
         if (Input::GetMouseButtonDown(0))
+        {
             selectedTool->OnClick(shift, ctrl, v2i(pos));
+            selectedTool->OnClick(shift, ctrl, pos);
+        }
         else if (Input::GetMouseButton(0))
             selectedTool->OnHoldClick(shift, ctrl, v2i(pos));
         else if (Input::GetMouseButtonUp(0))

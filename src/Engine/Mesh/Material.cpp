@@ -6,7 +6,7 @@
 
 Material::Material() { }
 
-Material::Material(Shader& shader)
+Material::Material(Shader* shader)
 {
 	this->shader = shader;
 }
@@ -24,16 +24,10 @@ Material::Material(Material&& obj) noexcept {
 	// It will simply shift the resources,
 	// without creating a copy.
 	this->shader = obj.shader;
-	obj.shader = Shader();
+	obj.shader = nullptr;
 }
 
-Material::~Material()
-{
-	shader.~Shader();
-	uniformLocations.~unordered_map();
-}
-
-void Material::SetShader(Shader& shader)
+void Material::SetShader(Shader* shader)
 {
 	this->shader = shader;
 }
@@ -178,18 +172,18 @@ Material& Material::operator=(const Material& other)
 Material& Material::operator=(Material&& other) noexcept
 {
 	this->shader = other.shader;
-	other.shader = Shader();
+	other.shader = nullptr;
 	return *this;
 }
 
 void Material::Bind() const
 {
-	shader.Bind();
+	shader->Bind();
 }
 
 void Material::Unbind() const
 {
-	shader.Unbind();
+	shader->Unbind();
 }
 
 int Material::GetUniformLocation(const std::string& name)
@@ -198,7 +192,7 @@ int Material::GetUniformLocation(const std::string& name)
 		return uniformLocations[name];
 	else
 	{
-		int location = glGetUniformLocation(shader.id, name.c_str());
+		int location = glGetUniformLocation(shader->id, name.c_str());
 		uniformLocations[name] = location;
 		return location;
 	}

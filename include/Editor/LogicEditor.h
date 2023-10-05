@@ -79,13 +79,12 @@ protected:
 	static LogicInspector* inspector;
 };
 
-// todo
 class EntityPlaceTool : public LogicTool
 {
 public:
 	using LogicTool::LogicTool;
 
-	void OnClick(bool shift, bool ctrl, const v2i& pos) override;
+	void OnClick(bool shift, bool ctrl, const v2& exactPos) override;
 
 	inline void SetEntityToPlace(Entity* e) { toPlace = e; }
 
