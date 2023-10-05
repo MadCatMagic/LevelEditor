@@ -300,9 +300,11 @@ void Editor::ReloadLevel(Level* l)
 
 void Editor::ChangeEditor(EditorMode newMode)
 {
+    editors[mode]->OnEditorInactive();
     mode = newMode;
     if (editors[mode]->tools.size() != 0)
         selectedTool = editors[mode]->tools[editors[mode]->selectedTool];
     else
         selectedTool = nullptr;
+    editors[mode]->OnEditorActive();
 }

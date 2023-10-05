@@ -22,6 +22,11 @@ public:
 	// called when the scene is reloaded
 	virtual inline void OnReload() {};
 
+	// called when the active editor is switched and this editor is no longer active
+	virtual inline void OnEditorInactive() {};
+	// called when the active editor is switched to this one
+	virtual inline void OnEditorActive() {};
+
 	friend class Editor;
 
 	int selectedTool = 0;

@@ -19,7 +19,7 @@ public:
 	inline bool IsAnythingSelected() const { return targetSelected; }
 	void DrawGizmosOfSelected();
 
-	void DeleteEntity(Entity* e);
+	void DeleteSelected();
 
 private:
 	void AfterSettingTarget();
@@ -53,6 +53,9 @@ public:
 	void Render() override;
 	void RenderUI() override;
 	void OnReload() override;
+
+	void OnEditorActive() override;
+	void OnEditorInactive() override;
 
 	void DeleteTrigger(AreaTrigger* t);
 	void DeleteEntity(Entity* e);

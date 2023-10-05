@@ -2,6 +2,7 @@
 #include "Editor/EditorGizmos.h"
 
 #include "Compiler/LevelRenderer.h"
+#include "Engine/Input.h"
 
 #include "imgui.h"
 
@@ -56,6 +57,9 @@ void LogicEditor::Render()
 
 void LogicEditor::RenderUI()
 {
+	if (Input::GetKeyDown(Input::Key::DELETE))
+		inspector.DeleteSelected();
+
 	if (selectedTool == 0)
 	{
 		ImGui::NewLine();
@@ -85,6 +89,15 @@ void LogicEditor::RenderUI()
 void LogicEditor::OnReload()
 {
 	inspector.SetLevel(target);
+}
+
+void LogicEditor::OnEditorActive()
+{
+}
+
+void LogicEditor::OnEditorInactive()
+{
+	Camera::_UpdateRenderer(nullptr, false);
 }
 
 void LogicEditor::DeleteTrigger(AreaTrigger* t)
@@ -121,6 +134,9 @@ void LogicInspector::DrawUI()
 
 	if (targetSelected)
 	{
+		if (ImGui::Button("Delete Selected"))
+			DeleteSelected();
+
 		if (ImGui::InputText((inspectorTypeName + " Name").c_str(), nameRaw, 64))
 			SetName(nameRaw);
 
@@ -129,12 +145,7 @@ void LogicInspector::DrawUI()
 
 		if (!entityTarget)
 		{
-			if (ImGui::Button("Delete Trigger"))
-			{
-				editor->DeleteTrigger(triggerTarget);
-				triggerTarget = nullptr;
-				targetSelected = false;
-			}
+			
 		}
 		else
 		{
@@ -172,8 +183,8 @@ v4 LogicInspector::GetBoundsOfSelected() const
 {
 	if (targetIsEntity)
 	{
-		v2 bl = entityTarget->position - (entityTarget->PlaceAtCentreOfTile() ? 0.5f : 0.0f);
-		v2 tr = entityTarget->position + (entityTarget->PlaceAtCentreOfTile() ? 0.5f : 1.0f);
+		v2 bl = entityTarget->position - (entityTarget->PlaceAtCentreOfTile() ? 0.0f : 0.5f);
+		v2 tr = entityTarget->position + (entityTarget->PlaceAtCentreOfTile() ? 1.0f : 0.5f);
 		return v4(bl.x, bl.y, tr.x, tr.y);
 	}
 	else
@@ -186,12 +197,22 @@ void LogicInspector::DrawGizmosOfSelected()
 		entityTarget->Gizmos();
 }
 
-void LogicInspector::DeleteEntity(Entity* e)
+void LogicInspector::DeleteSelected()
 {
-	if (targetIsEntity && e == entityTarget)
-		targetSelected = false;
-	entityTarget = nullptr;
-	editor->DeleteEntity(e);
+	if (!targetSelected)
+		return;
+
+	targetSelected = false;
+	if (targetIsEntity)
+	{
+		editor->DeleteEntity(entityTarget);
+		entityTarget = nullptr;
+	}
+	else
+	{
+		editor->DeleteTrigger(triggerTarget);
+		triggerTarget = nullptr;
+	}
 }
 
 void LogicInspector::AfterSettingTarget()
@@ -245,13 +266,7 @@ void EntityPlaceTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 			break;
 		}
 
-	if (shift && occupied)
-	{
-		inspector->DeleteEntity(level->entities[index]);
-		return;
-	}
-
-	if (!shift && !occupied)
+	if (!occupied)
 	{
 		Entity* entity = toPlace->CreateEntityFromName(toPlace->GetType());
 		entity->name = toPlace->GetType();

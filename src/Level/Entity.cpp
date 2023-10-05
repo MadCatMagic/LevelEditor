@@ -36,9 +36,9 @@ void Camera::UI(Level* l)
 void Camera::Gizmos()
 {
 	EditorGizmos::SetColour(editorColour);
-	EditorGizmos::DrawLine(position - dimensions * 0.5f, position + dimensions * 0.5f, 2.0f);
-	EditorGizmos::DrawLine(position - v2(dimensions.x, -dimensions.y) * 0.5f, position + v2(dimensions.x, -dimensions.y) * 0.5f, 2.0f);
-	EditorGizmos::DrawRectOutline(position - dimensions * 0.5f, position + dimensions * 0.5f, 2.0f);
+	EditorGizmos::DrawLine(position - dimensions * 0.5f, position + dimensions * 0.5f, 0.7f);
+	EditorGizmos::DrawLine(position - v2(dimensions.x, -dimensions.y) * 0.5f, position + v2(dimensions.x, -dimensions.y) * 0.5f, 0.7f);
+	EditorGizmos::DrawRectOutline(position - dimensions * 0.5f, position + dimensions * 0.5f, 1.0f);
 }
 
 std::vector<std::string> Camera::SaveData() const
