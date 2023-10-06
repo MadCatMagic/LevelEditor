@@ -14,14 +14,55 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 	tex->CreateTexture(cam.pixelSize);
 	v3* data = tex->GetRawData();
 
+	struct TileRenderData
+	{
+		int solidNeighbours = 0;
+	};
+
+	// precompute certain values that will be constant for each tile
+	// with a small margin (+/- 2 tiles either side) around the camera bounds
+	v2i bottomLeftBound = (v2i)(camera.position - camera.dimensions * 0.5f - v2(2));
+	v2i topRightBound = (v2i)(camera.position + camera.dimensions * 0.5f + v2(2));
+	std::vector<std::vector<TileRenderData>> renderData;
+	for (int x = bottomLeftBound.x; x < topRightBound.x; x++)
+	{
+		std::vector<TileRenderData> columnData;
+		for (int y = bottomLeftBound.y; y < topRightBound.y; y++)
+		{
+			TileRenderData t;
+
+			// basic
+			TileData* td = level->GetTile(v2i(x, y) + v2i(1, 0), 0);
+			t.solidNeighbours += td == nullptr || td->solid;
+			td = level->GetTile(v2i(x, y) + v2i(0, 1), 0);
+			t.solidNeighbours += td == nullptr || td->solid;
+			td = level->GetTile(v2i(x, y) + v2i(-1, 0), 0);
+			t.solidNeighbours += td == nullptr || td->solid;
+			td = level->GetTile(v2i(x, y) + v2i(0, -1), 0);
+			t.solidNeighbours += td == nullptr || td->solid;
+
+			columnData.push_back(t);
+		}
+		renderData.push_back(columnData);
+	}
+
 	for (int x = 0; x < cam.pixelSize.x; x++)
 		for (int y = 0; y < cam.pixelSize.y; y++)
 		{
 			v2 realPos = PixelToWorld(v2i(x, y));
 			v2i lower = (v2i)realPos;
+			v2i tileRenderDataPos = lower - bottomLeftBound;
+
+			TileRenderData trd = renderData[tileRenderDataPos.x][tileRenderDataPos.y];
+
+			data[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = v3(1.0f, 0.5f, 0.0f) * (trd.solidNeighbours * 0.25f);
+
+			/*
 			TileData* t = level->GetTile(lower, 0);
 			if (t != nullptr && t->solid)
-				data[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = v3(1.0f, 0.0f, 0.0f);
+			{
+			}
+			*/
 		}
 
 	tex->UpdateTexture();

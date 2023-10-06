@@ -21,6 +21,12 @@ struct Entity
 	virtual inline void LoadData(std::vector<std::string> data) { }
 
 	static Entity* CreateEntityFromName(const std::string& name);
+
+	void inline VariableHasChanged() { editorChangedVariable = true; }
+
+protected:
+	// if you use this flag, set it to false afterwards
+	bool editorChangedVariable = false;
 };
 
 struct Camera : Entity
@@ -39,6 +45,8 @@ struct Camera : Entity
 
 	static void _UpdateRenderer(Camera* targetCam, bool rendering);
 	static void _Release();
+
+	static bool cameraShouldUpdatePreview;
 
 private:
 	bool preview = false;

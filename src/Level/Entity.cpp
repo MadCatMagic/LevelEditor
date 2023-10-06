@@ -16,19 +16,41 @@ Entity* Entity::CreateEntityFromName(const std::string& name)
 
 void Camera::UI(Level* l)
 {
-	ImGui::InputFloat2("Dimensions", &dimensions.x);
-	ImGui::InputInt2("Pixel Size", &pixelSize.x);
+	bool previousPreview = preview;
+	if (ImGui::InputFloat2("Dimensions", &dimensions.x))
+		VariableHasChanged();
+	if (ImGui::InputInt2("Pixel Size", &pixelSize.x))
+		VariableHasChanged();
 
 	ImGui::NewLine();
 	ImGui::Checkbox("Enable Camera Preview", &preview);
 
 	if (preview)
 	{
-		// rendering
-		LevelRenderer r = LevelRenderer(l);
-		if (tex != nullptr)
-			delete tex;
-		tex = r.RenderCamera(*this);
+		ImGui::SameLine();
+		if (ImGui::Button("Force Update Preview"))
+			cameraShouldUpdatePreview = true;
+	}
+
+	if (preview && !previousPreview)
+		cameraShouldUpdatePreview = true;
+	if (editorChangedVariable)
+	{
+		editorChangedVariable = false;
+		cameraShouldUpdatePreview = true;
+	}
+	
+	if (preview)
+	{
+		if (cameraShouldUpdatePreview)
+		{
+			cameraShouldUpdatePreview = false;
+			// rendering
+			LevelRenderer r = LevelRenderer(l);
+			if (tex != nullptr)
+				delete tex;
+			tex = r.RenderCamera(*this);
+		}
 	}
 	_UpdateRenderer(this, preview);
 }
@@ -69,6 +91,8 @@ void Camera::_UpdateRenderer(Camera* targetCam, bool rendering)
 
 	renderer->SetTexture(tex->GetTexture());
 }
+
+bool Camera::cameraShouldUpdatePreview = false;
 
 void Camera::_Release()
 {

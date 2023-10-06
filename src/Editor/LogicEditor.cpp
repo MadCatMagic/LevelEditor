@@ -93,6 +93,7 @@ void LogicEditor::OnReload()
 
 void LogicEditor::OnEditorActive()
 {
+	Camera::cameraShouldUpdatePreview = true;
 }
 
 void LogicEditor::OnEditorInactive()
@@ -149,10 +150,12 @@ void LogicInspector::DrawUI()
 		}
 		else
 		{
-			ImGui::InputFloat2("Position", &entityTarget->position.x);
+			if (ImGui::InputFloat2("Position", &entityTarget->position.x))
+				entityTarget->VariableHasChanged();
 			entityTarget->UI(level);
 		}
 	}
+	ImGui::NewLine();
 }
 
 void LogicInspector::SetTarget(Entity* target)
@@ -225,7 +228,10 @@ void LogicInspector::AfterSettingTarget()
 void LogicInspector::SetName(const std::string& name)
 {
 	if (targetIsEntity)
+	{
 		entityTarget->name = name;
+		entityTarget->VariableHasChanged();
+	}
 	else
 		triggerTarget->name = name;
 }
@@ -241,7 +247,10 @@ std::string LogicInspector::GetName()
 void LogicInspector::SetEditorColour(const v4& col)
 {
 	if (targetIsEntity)
+	{
 		entityTarget->editorColour = col;
+		entityTarget->VariableHasChanged();
+	}
 	else
 		triggerTarget->editorColour = col;
 }

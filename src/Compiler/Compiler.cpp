@@ -212,8 +212,6 @@ std::vector<ColliderSegment> Compiler::CompileGeometry(int layer)
         segments.push_back(segment);
     }
 
-    // now want to work out what to do with all the vertices with more than 2 connections
-    // perhaps try and get it to be a solvable eulerian graph (all connected with all vertices having even degree) and then solve that?
     return segments;
 }
 
