@@ -61,7 +61,7 @@ public:
 	void DeleteEntity(Entity* e);
 
 private:
-	class EntityPlaceTool* entityPlaceTool = nullptr;
+	class EntityTool* entityPlaceTool = nullptr;
 
 	LogicInspector inspector;
 
@@ -79,17 +79,22 @@ protected:
 	static LogicInspector* inspector;
 };
 
-class EntityPlaceTool : public LogicTool
+class EntityTool : public LogicTool
 {
 public:
 	using LogicTool::LogicTool;
 
 	void OnClick(bool shift, bool ctrl, const v2& exactPos) override;
+	void OnHoldClick(bool shift, bool ctrl, const v2& exactPos) override;
+	void OnReleaseClick(bool shift, bool ctrl, const v2& exactPos) override;
 
 	inline void SetEntityToPlace(Entity* e) { toPlace = e; }
 
 private:
 	Entity* toPlace = nullptr;
+
+	Entity* holdingEntity = nullptr;
+
 };
 
 class TriggerEditTool : public LogicTool

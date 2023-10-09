@@ -18,7 +18,7 @@ void LogicEditor::SetupTools()
 	LogicTool::SetInspector(&inspector);
 	inspector.SetEditor(this);
 
-	entityPlaceTool = new EntityPlaceTool(target, "geometry_draw_icon.png");
+	entityPlaceTool = new EntityTool(target, "geometry_draw_icon.png");
 	tools.push_back(entityPlaceTool);
 	tools.push_back(new TriggerEditTool(target, "geometry_draw_icon.png"));
 
@@ -263,18 +263,30 @@ v4 LogicInspector::GetEditorColour()
 		return triggerTarget->editorColour;
 }
 
-void EntityPlaceTool::OnClick(bool shift, bool ctrl, const v2& exactPos)
+void EntityTool::OnClick(bool shift, bool ctrl, const v2& exactPos)
 {
 	v2 pos = exactPos;
 
 	// try and select an object
 	int start = 0;
+	bool targetIsEntity = false;
 	for (int i = 0; i < level->entities.size(); i++)
 		if (level->entities[i] == inspector->GetTarget())
 		{
 			start = (i + 1) % level->entities.size();
+			targetIsEntity = true;
 			break;
 		}
+
+	if (targetIsEntity && ctrl)
+	{
+		v4 bounds = inspector->GetBoundsOfSelected();
+		if (bounds.x <= pos.x && bounds.y <= pos.y && bounds.z >= pos.x && bounds.w >= pos.y)
+		{
+			holdingEntity = (Entity*)inspector->GetTarget();
+			return;
+		}
+	}
 
 	bool found = false;
 	for (int i = start; i < start + level->entities.size(); i++)
@@ -285,14 +297,19 @@ void EntityPlaceTool::OnClick(bool shift, bool ctrl, const v2& exactPos)
 		if (bl.x <= pos.x && pos.x <= tr.x && bl.y <= pos.y && pos.y <= tr.y)
 		{
 			// set as target normally
-			if (!shift)
+			if (!shift && !ctrl)
 			{
 				inspector->SetTarget(t);
 				return;
 			}
 			// if shift is pressed then set a flag not to create a new entity
-			else
+			else if (shift && !ctrl)
 				found = true;
+			else
+			{
+				holdingEntity = t;
+				return;
+			}
 		}
 	}
 
@@ -305,6 +322,20 @@ void EntityPlaceTool::OnClick(bool shift, bool ctrl, const v2& exactPos)
 		level->entities.push_back(entity);
 		inspector->SetTarget(level->entities[level->entities.size() - 1]);
 	}
+}
+
+void EntityTool::OnHoldClick(bool shift, bool ctrl, const v2& exactPos)
+{
+	if (holdingEntity != nullptr)
+		if (!shift)
+			holdingEntity->position = holdingEntity->PlaceAtCentreOfTile() ? v2i(exactPos) : v2i(exactPos + 0.5f);
+		else
+			holdingEntity->position = holdingEntity->PlaceAtCentreOfTile() ? (exactPos - 0.5f) : exactPos;
+}
+
+void EntityTool::OnReleaseClick(bool shift, bool ctrl, const v2& exactPos)
+{
+	holdingEntity = nullptr;
 }
 
 void TriggerEditTool::OnClick(bool shift, bool ctrl, const v2i& pos)

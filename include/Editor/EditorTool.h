@@ -7,8 +7,10 @@ public:
 	EditorTool(Level* target, const std::string& iconName);
 	~EditorTool();
 
-	// special case
+	// special cases, mostly used for logiceditor with entity placement
 	inline virtual void OnClick(bool shift, bool ctrl, const v2& exactPos) {};
+	inline virtual void OnHoldClick(bool shift, bool ctrl, const v2& exactPos) {};
+	inline virtual void OnReleaseClick(bool shift, bool ctrl, const v2& exactPos) {};
 
 	inline virtual void OnClick(bool shift, bool ctrl, const v2i& pos) {};
 	inline virtual void OnHoldClick(bool shift, bool ctrl, const v2i& pos) {};

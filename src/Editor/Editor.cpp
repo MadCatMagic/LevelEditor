@@ -93,9 +93,15 @@ void Editor::Update()
             selectedTool->OnClick(shift, ctrl, pos);
         }
         else if (Input::GetMouseButton(0))
+        {
             selectedTool->OnHoldClick(shift, ctrl, v2i(pos));
+            selectedTool->OnHoldClick(shift, ctrl, pos);
+        }
         else if (Input::GetMouseButtonUp(0))
+        {
             selectedTool->OnReleaseClick(shift, ctrl, v2i(pos));
+            selectedTool->OnReleaseClick(shift, ctrl, pos);
+        }
     }
 
     // now do translation and zooming

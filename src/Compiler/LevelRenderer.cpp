@@ -1,5 +1,6 @@
 #include "Compiler/LevelRenderer.h"
 #include "Level/Level.h"
+#include "Level/LevelMaterial.h"
 
 LevelRenderer::LevelRenderer(Level* l)
 	: level(l)
@@ -17,6 +18,7 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 	struct TileRenderData
 	{
 		int solidNeighbours = 0;
+		LevelMaterial* mat = nullptr;
 	};
 
 	// precompute certain values that will be constant for each tile
@@ -41,6 +43,10 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 			td = level->GetTile(v2i(x, y) + v2i(0, -1), 0);
 			t.solidNeighbours += td == nullptr || td->solid;
 
+			td = level->GetTile(v2i(x, y), 0);
+			if (td != nullptr)
+				t.mat = MaterialManager::currentInstance->GetMaterialFromId(td->material);
+
 			columnData.push_back(t);
 		}
 		renderData.push_back(columnData);
@@ -55,7 +61,7 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 
 			TileRenderData trd = renderData[tileRenderDataPos.x][tileRenderDataPos.y];
 
-			data[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = v3(1.0f, 0.5f, 0.0f) * (trd.solidNeighbours * 0.25f);
+			data[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = (v3)trd.mat->GetDataAtPoint(realPos) * (trd.solidNeighbours * 0.25f);
 
 			/*
 			TileData* t = level->GetTile(lower, 0);

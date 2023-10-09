@@ -1,4 +1,5 @@
 #include "Level/LevelMaterial.h"
+#include "Level/Level.h"
 
 
 void MaterialManager::PopulateMaterialList()
@@ -12,6 +13,8 @@ void MaterialManager::PopulateMaterialList()
 	// page 2
 	pages.push_back(PageData("Second Page", 1));
 	materialList[16] = new LevelMaterial(16, v3(1.0f, 0.5f, 0.0f), "material3");
+
+	currentInstance = this;
 }
 
 v3 MaterialManager::GetMaterialColour(int id)
@@ -28,21 +31,30 @@ std::string MaterialManager::GetMaterialName(int id)
 	return "error_invalid_id";
 }
 
-int MaterialManager::GetPageLength(int page)
+int MaterialManager::GetPageLength(int page) const
 {
 	if (page < pages.size())
 		return pages[page].length;
 	return 0;
 }
 
-std::string MaterialManager::GetPageName(int page)
+std::string MaterialManager::GetPageName(int page) const
 {
 	if (page < pages.size())
 		return pages[page].name;
 	return "error_invalid_page";
 }
 
-bool MaterialManager::ValidMaterial(int id)
+MaterialManager* MaterialManager::currentInstance = nullptr;
+
+LevelMaterial* MaterialManager::GetMaterialFromId(int id) const
+{
+	if (ValidMaterial(id))
+		return materialList[id];
+	return nullptr;
+}
+
+bool MaterialManager::ValidMaterial(int id) const
 {
 	int page = id / 16;
 	return page < pages.size() && (id % 16) < pages[page].length;

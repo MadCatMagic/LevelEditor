@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Level\SpriteSheet.cpp" />
     <ClCompile Include="src\Compiler\LevelRenderer.cpp" />
     <ClCompile Include="src\Editor\LogicEditor.cpp" />
     <ClCompile Include="src\Editor\EditorTool.cpp" />
@@ -88,6 +89,7 @@
     <ClInclude Include="include\Level\Entity.h" />
     <ClInclude Include="include\Level\Level.h" />
     <ClInclude Include="include\Level\LevelMaterial.h" />
+    <ClInclude Include="include\Level\SpriteSheet.h" />
     <ClInclude Include="include\Matrix.h" />
     <ClInclude Include="include\Quaternion.h" />
     <ClInclude Include="include\Random.h" />
