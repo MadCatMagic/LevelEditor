@@ -18,9 +18,9 @@ void LogicEditor::SetupTools()
 	LogicTool::SetInspector(&inspector);
 	inspector.SetEditor(this);
 
-	entityPlaceTool = new EntityTool(target, "geometry_draw_icon.png");
+	entityPlaceTool = new EntityTool(target, "entity_icon.png");
 	tools.push_back(entityPlaceTool);
-	tools.push_back(new TriggerEditTool(target, "geometry_draw_icon.png"));
+	tools.push_back(new TriggerEditTool(target, "trigger_icon.png"));
 
 	baseEntityTypes.push_back(new Entity());
 	baseEntityTypes.push_back(new Camera());
