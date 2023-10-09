@@ -17,6 +17,8 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 
 	struct TileRenderData
 	{
+		bool solid = false;
+		int slant = 0;
 		int solidNeighbours = 0;
 		LevelMaterial* mat = nullptr;
 	};
@@ -45,7 +47,11 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 
 			td = level->GetTile(v2i(x, y), 0);
 			if (td != nullptr)
+			{
 				t.mat = MaterialManager::currentInstance->GetMaterialFromId(td->material);
+				t.solid = td->solid;
+				t.slant = td->slant;
+			}
 
 			columnData.push_back(t);
 		}
@@ -61,7 +67,8 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 
 			TileRenderData trd = renderData[tileRenderDataPos.x][tileRenderDataPos.y];
 
-			data[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = (v3)trd.mat->GetDataAtPoint(realPos) * (trd.solidNeighbours * 0.25f);
+			if (trd.solid)
+				data[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = (v3)trd.mat->GetDataAtPoint(realPos) * (trd.solidNeighbours * 0.25f);
 
 			/*
 			TileData* t = level->GetTile(lower, 0);

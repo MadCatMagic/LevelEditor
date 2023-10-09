@@ -2,15 +2,22 @@
 #include <vector>
 #include "Vector.h"
 
+enum MaterialType {
+	None, BasicTileMap
+};
+
 struct LevelMaterial
 {
-	LevelMaterial(int materialId, const v3& editorCol, const std::string& materialName);
+	LevelMaterial(const v3& editorCol, const std::string& materialName);
+	LevelMaterial* Init(int materialId);
 
 	inline virtual v4 GetDataAtPoint(const v2& worldPos) { return editorColour; }
 
 	int id;
 	v3 editorColour;
 	std::string name;
+
+	MaterialType type = MaterialType::None;
 };
 
 class MaterialManager

@@ -327,10 +327,13 @@ void EntityTool::OnClick(bool shift, bool ctrl, const v2& exactPos)
 void EntityTool::OnHoldClick(bool shift, bool ctrl, const v2& exactPos)
 {
 	if (holdingEntity != nullptr)
+	{
 		if (!shift)
 			holdingEntity->position = holdingEntity->PlaceAtCentreOfTile() ? v2i(exactPos) : v2i(exactPos + 0.5f);
 		else
 			holdingEntity->position = holdingEntity->PlaceAtCentreOfTile() ? (exactPos - 0.5f) : exactPos;
+		holdingEntity->VariableHasChanged();
+	}
 }
 
 void EntityTool::OnReleaseClick(bool shift, bool ctrl, const v2& exactPos)
