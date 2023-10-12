@@ -1,4 +1,5 @@
 #include "Level/SpriteSheet.h"
+#include "Engine/PixelTexture2D.h"
 
 #include <fstream>
 #include <iostream>
@@ -8,6 +9,14 @@ SpriteSheetMaterial::SpriteSheetMaterial(const std::string& sheetFileDirectory)
 {
 	directory = "res/sprites/" + sheetFileDirectory;
 	ReadFile();
+}
+
+SpriteSheetMaterial::~SpriteSheetMaterial()
+{
+	if (textureBase != nullptr)
+		delete textureBase;
+	if (texture != nullptr)
+		delete texture;
 }
 
 void SpriteSheetMaterial::ReadFile()
@@ -103,4 +112,6 @@ void SpriteSheetMaterial::ReadFile()
 
 void SpriteSheetMaterial::LoadSprites()
 {
+	textureBase = new Texture2D(spritesDirectory);
+	texture = new PixelTexture2D(textureBase);
 }

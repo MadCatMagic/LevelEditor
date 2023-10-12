@@ -19,6 +19,11 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 	{
 		bool solid = false;
 		int slant = 0;
+		// should be a bit mask so i can directly compare the value (0-127) with a sprite to load into that position.
+		// gonna be a lot of work to write out all variations though...
+		// 4  2  1
+		// 8     128
+		// 16 32 64
 		int solidNeighbours = 0;
 		LevelMaterial* mat = nullptr;
 	};
@@ -35,17 +40,24 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 		{
 			TileRenderData t;
 
-			// basic
-			TileData* td = level->GetTile(v2i(x, y) + v2i(1, 0), 0);
-			t.solidNeighbours += td == nullptr || td->solid;
-			td = level->GetTile(v2i(x, y) + v2i(0, 1), 0);
-			t.solidNeighbours += td == nullptr || td->solid;
-			td = level->GetTile(v2i(x, y) + v2i(-1, 0), 0);
-			t.solidNeighbours += td == nullptr || td->solid;
-			td = level->GetTile(v2i(x, y) + v2i(0, -1), 0);
-			t.solidNeighbours += td == nullptr || td->solid;
+			const v2i tileOffsets[8]{
+				v2i(1, 1),
+				v2i(0, 1),
+				v2i(-1, 1),
+				v2i(-1, 0),
+				v2i(-1, -1),
+				v2i(0, -1),
+				v2i(1, -1),
+				v2i(1, 0)
+			};
 
-			td = level->GetTile(v2i(x, y), 0);
+			for (int i = 0; i < 8; i++)
+			{
+				TileData* td = level->GetTile(v2i(x, y) + tileOffsets[i], 0);
+				t.solidNeighbours += (td == nullptr || td->solid) << i;
+			}
+
+			TileData* td = level->GetTile(v2i(x, y), 0);
 			if (td != nullptr)
 			{
 				t.mat = MaterialManager::currentInstance->GetMaterialFromId(td->material);
@@ -68,7 +80,7 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 			TileRenderData trd = renderData[tileRenderDataPos.x][tileRenderDataPos.y];
 
 			if (trd.solid)
-				data[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = (v3)trd.mat->GetDataAtPoint(realPos) * (trd.solidNeighbours * 0.25f);
+				data[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = (v3)trd.mat->GetDataAtPoint(realPos) * (trd.solidNeighbours * (1.0f / 256.0f));
 
 			/*
 			TileData* t = level->GetTile(lower, 0);
