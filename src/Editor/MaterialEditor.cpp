@@ -18,10 +18,9 @@ MaterialEditor::~MaterialEditor()
 
 void MaterialEditor::SetupTools()
 {
-	MaterialTool* t = new MaterialTool(target, "geometry_boxfill_icon.png");
+	MaterialTool* t = new MaterialTool(target, "material_tool_icon.png");
 	t->SetToolReference(&selectedTool);
 	tools.push_back(t);
-	
 }
 
 void MaterialEditor::Render()

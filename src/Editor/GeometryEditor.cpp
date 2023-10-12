@@ -9,7 +9,7 @@ void GeometryEditor::SetupTools()
 {
     tools.push_back(new DrawGeometryTool(target, "geometry_draw_icon.png"));
     tools.push_back(new BoxGeometryTool(target, "geometry_boxfill_icon.png"));
-    tools.push_back(new RotateGeometryTool(target, "geometry_boxfill_icon.png")); // need to add icon
+    tools.push_back(new RotateGeometryTool(target, "geometry_rotate_icon.png"));
 }
 
 void GeometryEditor::Render()
