@@ -182,6 +182,14 @@ void* LogicInspector::GetTarget() const
 		return triggerTarget;
 }
 
+void LogicInspector::SetLevel(Level* l)
+{
+	level = l;
+	entityTarget = nullptr;
+	triggerTarget = nullptr;
+	targetSelected = false;
+}
+
 v4 LogicInspector::GetBoundsOfSelected() const
 {
 	if (targetIsEntity)

@@ -13,20 +13,7 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 	cam = camera;
 	PixelTexture2D* tex = new PixelTexture2D();
 	tex->CreateTexture(cam.pixelSize);
-	v3* data = tex->GetRawData();
-
-	struct TileRenderData
-	{
-		bool solid = false;
-		int slant = 0;
-		// should be a bit mask so i can directly compare the value (0-127) with a sprite to load into that position.
-		// gonna be a lot of work to write out all variations though...
-		// 4  2  1
-		// 8     128
-		// 16 32 64
-		int solidNeighbours = 0;
-		LevelMaterial* mat = nullptr;
-	};
+	v4* data = tex->GetRawData();
 
 	// precompute certain values that will be constant for each tile
 	// with a small margin (+/- 2 tiles either side) around the camera bounds
@@ -80,7 +67,7 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 			TileRenderData trd = renderData[tileRenderDataPos.x][tileRenderDataPos.y];
 
 			if (trd.solid)
-				data[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = (v3)trd.mat->GetDataAtPoint(realPos) * (trd.solidNeighbours * (1.0f / 256.0f));
+				data[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = trd.mat->GetDataAtPoint(realPos, trd);
 
 			/*
 			TileData* t = level->GetTile(lower, 0);

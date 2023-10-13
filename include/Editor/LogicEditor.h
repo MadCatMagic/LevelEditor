@@ -13,7 +13,7 @@ public:
 
 	void* GetTarget() const;
 	inline void SetEditor(LogicEditor* e) { editor = e; };
-	inline void SetLevel(Level* l) { level = l; }
+	void SetLevel(Level* l);
 
 	v4 GetBoundsOfSelected() const;
 	inline bool IsAnythingSelected() const { return targetSelected; }

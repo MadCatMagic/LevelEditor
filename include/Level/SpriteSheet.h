@@ -4,18 +4,13 @@
 
 struct SpriteSheetMaterial : public LevelMaterial
 {
-	// this should be the location of the actual .mat file relative to res/sprites/
-	SpriteSheetMaterial(const std::string& sheetFileDirectory);
+	using LevelMaterial::LevelMaterial;
 	~SpriteSheetMaterial();
 
-	void LoadSprites(); // todo
+	v4 GetDataAtPoint(const v2& worldPos, const TileRenderData& tile) override;
+
+	void LoadSprites(const std::string& spritesDirectory);
 
 private:
-	void ReadFile();
-
-	std::string directory;
-	std::string spritesDirectory;
-
-	class PixelTexture2D* texture = nullptr;
-	class Texture2D* textureBase = nullptr;
+	class Image* texture = nullptr;
 };

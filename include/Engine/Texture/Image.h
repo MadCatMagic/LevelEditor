@@ -1,5 +1,5 @@
 #pragma once
-#include <string>
+#include "Vector.h"
 
 class Image
 {
@@ -18,6 +18,9 @@ public:
 	inline int GetWidth() const { return width; }
 	inline int GetHeight() const { return height; }
 	inline int GetBytesPerPixel() const { return bytesPerPixel; }
+	
+	v4 At(const v2i& pos) const;
+	v4 At(int index) const;
 
 private:
 	std::string filepath;

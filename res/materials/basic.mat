@@ -5,3 +5,4 @@ materialType:basicTileMap
 sprites:$this // means that the sprite sheet is called the same as this file is called, in the same folder.
               // also assumes the filetype is .png
 editorColour:0.4,0.5,0.9
+pageIndex:3

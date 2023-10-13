@@ -276,6 +276,8 @@ int Editor::GetIndex(int x, int y, int layer) const
 
 void Editor::ReloadLevel(Level* l)
 {
+    if (level != nullptr)
+        delete level;
     level = l;
 
     // setup renderers

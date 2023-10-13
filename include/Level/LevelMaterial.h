@@ -3,7 +3,7 @@
 #include "Vector.h"
 
 enum MaterialType {
-	None, BasicTileMap
+	UNINITIALIZED, None, BasicTileMap
 };
 
 struct LevelMaterial
@@ -11,9 +11,9 @@ struct LevelMaterial
 	LevelMaterial(const v3& editorCol, const std::string& materialName);
 	LevelMaterial* Init(int materialId);
 
-	inline virtual v4 GetDataAtPoint(const v2& worldPos) { return editorColour; }
+	inline virtual v4 GetDataAtPoint(const v2& worldPos, const struct TileRenderData& tile) { return editorColour; }
 
-	int id;
+	int id = -1;
 	v3 editorColour;
 	std::string name;
 
@@ -23,6 +23,8 @@ struct LevelMaterial
 class MaterialManager
 {
 public:
+	~MaterialManager();
+
 	void PopulateMaterialList();
 
 	v3 GetMaterialColour(int id);
@@ -34,6 +36,8 @@ public:
 
 	inline void SetSelectedOnPage(int page, int selected) { pages[page].currentSelection = selected; }
 	inline int GetSelectedOnPage(int page) { return pages[page].currentSelection; }
+
+	LevelMaterial* CreateMaterialFromFile(const std::string& filepath, int page);
 	
 	struct PageData
 	{

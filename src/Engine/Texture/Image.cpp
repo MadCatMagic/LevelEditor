@@ -26,3 +26,18 @@ void Image::UnloadData()
     ImageLoader::ClearImageData(dataPointer);
     dataLoaded = false;
 }
+
+v4 Image::At(const v2i& pos) const
+{
+    return At(pos.x + pos.y * width);
+}
+
+v4 Image::At(int index) const
+{
+    int k = index * bytesPerPixel;
+    if (bytesPerPixel == 3)
+        return v3((float)dataPointer[k] / 255.0f, (float)dataPointer[k + 1] / 255.0f, (float)dataPointer[k + 2] / 255.0f);
+    else if (bytesPerPixel == 4)
+        return v4((float)dataPointer[k] / 255.0f, (float)dataPointer[k + 1] / 255.0f, (float)dataPointer[k + 2] / 255.0f, (float)dataPointer[k + 3] / 255.0f);
+    return 0;
+}

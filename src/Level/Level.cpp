@@ -26,6 +26,16 @@ Level::~Level()
 	{
 		delete c;
 	}
+	for each (Entity* e in entities)
+	{
+		delete e; 
+		e = nullptr;
+	}
+	for each (AreaTrigger * t in triggers)
+	{
+		delete t;
+		t = nullptr;
+	}
 	chunks.clear();
 	//delete[] tileData;
 }
