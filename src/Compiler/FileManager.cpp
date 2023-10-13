@@ -144,13 +144,13 @@ Level* FileManager::LoadLevel(const std::string& filename)
         else if (c == ',')
         {
             if (readingState == 0)
-                t->bottomLeft.x = std::stof(accumulate);
+                t->bottomLeft.x = std::stoi(accumulate);
             else if (readingState == 1)
-                t->bottomLeft.y = std::stof(accumulate);
+                t->bottomLeft.y = std::stoi(accumulate);
             else if (readingState == 2)
-                t->topRight.x = std::stof(accumulate);
+                t->topRight.x = std::stoi(accumulate);
             else if (readingState == 3)
-                t->topRight.y = std::stof(accumulate);
+                t->topRight.y = std::stoi(accumulate);
             else if (readingState == 4)
                 t->editorColour.x = std::stof(accumulate);
             else if (readingState == 5)

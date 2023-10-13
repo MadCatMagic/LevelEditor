@@ -41,9 +41,9 @@ public:
 	
 	struct PageData
 	{
-		PageData(const std::string& pageName, int pageLength);
+		PageData(const std::string& pageName);
 		std::string name;
-		int length;
+		int length = 0;
 		int currentSelection = 0;
 	};
 

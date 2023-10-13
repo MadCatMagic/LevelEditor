@@ -31,6 +31,8 @@ Editor::~Editor()
             delete editor;
 
         EditorGizmos::Release();
+
+        delete level;
     }
 }
 
@@ -52,7 +54,7 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
     editors.push_back(new LogicEditor(level, this));
     ChangeEditor(EditorMode::Geometry);
 
-    for (int i = 0; i < editors.size(); i++)
+    for (size_t i = 0; i < editors.size(); i++)
         editors[i]->SetupTools();
 
     ReloadLevel(target);

@@ -23,20 +23,14 @@ Level::Level(const v2i& chunkDimensions)
 Level::~Level()
 {
 	for each (TileChunk* c in chunks)
-	{
 		delete c;
-	}
 	for each (Entity* e in entities)
-	{
-		delete e; 
-		e = nullptr;
-	}
+		delete e;
 	for each (AreaTrigger * t in triggers)
-	{
 		delete t;
-		t = nullptr;
-	}
 	chunks.clear();
+	entities.clear();
+	triggers.clear();
 	//delete[] tileData;
 }
 

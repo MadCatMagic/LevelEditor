@@ -77,8 +77,8 @@ void Camera::LoadData(std::vector<std::string> data)
 {
 	dimensions.x = std::stof(data[0]);
 	dimensions.y = std::stof(data[1]);
-	pixelSize.x = std::stof(data[2]);
-	pixelSize.y = std::stof(data[3]);
+	pixelSize.x = std::stoi(data[2]);
+	pixelSize.y = std::stoi(data[3]);
 }
 
 void Camera::_UpdateRenderer(Camera* targetCam, bool rendering)

@@ -32,6 +32,5 @@ private:
 	ImGuiIO* io = nullptr;
 
 	Editor editor;
-	Level* level = nullptr;
 };
 

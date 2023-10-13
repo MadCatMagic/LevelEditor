@@ -52,9 +52,10 @@ unsigned int VertexArray::currentlyBound = 0;
 
 VAStructure::VAStructure(const std::string& initToken)
 {
-	numAttributes = initToken.size() / 2;
-	data = new int[initToken.size()];
-	for (int i = 0; i < initToken.size(); i++)
+	size_t s = initToken.size();
+	numAttributes = s / 2;
+	data = new int[s];
+	for (size_t i = 0; i < s; i++)
 	{
 		if (i % 2 == 0)
 		{

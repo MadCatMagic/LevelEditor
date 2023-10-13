@@ -104,8 +104,7 @@ void Engine::Initialize()
     ImGui_ImplOpenGL3_Init("#version 130");
 
     // actual stuff
-    level = new Level(v2i(4, 3));
-    editor.Initialize(level, winSize);
+    editor.Initialize(new Level(v2i(4, 3)), winSize);
 }
 
 void Engine::Update()
@@ -135,7 +134,4 @@ void Engine::Release()
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-
-    // actual stuff
-    delete level;
 }

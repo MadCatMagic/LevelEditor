@@ -4,26 +4,59 @@
 
 #include <iostream>
 #include <fstream>
+#include <filesystem>
+#include <sys/stat.h>
 
 MaterialManager::~MaterialManager()
 {
-	for (int i = 0; i < materialList.size(); i++)
+	for (size_t i = 0; i < materialList.size(); i++)
 		if (materialList[i] != nullptr)
 			delete materialList[i];
 }
 
 void MaterialManager::PopulateMaterialList()
 {
-	// page 1
-	pages.push_back(PageData("Basic Page", 4));
-	materialList[0] = CreateMaterialFromFile("res/materials/default.mat", 0);
-	materialList[1] = CreateMaterialFromFile("res/materials/material1.mat", 0);
-	materialList[2] = CreateMaterialFromFile("res/materials/material2.mat", 0);
-	materialList[3] = CreateMaterialFromFile("res/materials/basic.mat", 0);
+	// try to find and load the pages.dat file:
+	std::ifstream stream("res/materials/pages.dat");
+	if (!stream.is_open())
+	{
+		std::cout << "Error: MaterialManager could not find 'pages.dat' in res/materials. Panic!";
+		return;
+	}
 
-	// page 2
-	pages.push_back(PageData("Second Page", 1));
-	materialList[16] = CreateMaterialFromFile("res/materials/material3.mat", 0);
+	// each line contains sequential page names, which should correspond to folders 
+	// containing the .mat files themselves that go in that particular page.
+	std::string line;
+	int lineNum = 0;
+	while (std::getline(stream, line))
+	{
+		pages.push_back(PageData(line));
+		std::string directory = "res/materials/" + line;
+
+		// checks whether folder exists
+		struct stat sb;
+		if (stat(directory.c_str(), &sb))
+		{
+			std::cout << "Warning: Material page " << line << " has no associated folder. Assuming the page is empty." << std::endl;
+			continue;
+		}
+
+		// load the specific materials in the corresponding folder.
+		for (const auto& entry : std::filesystem::directory_iterator(directory))
+			if (entry.path().extension() == ".mat")
+			{
+				LevelMaterial* mat = CreateMaterialFromFile(entry.path().string(), lineNum);
+				if (mat != nullptr)
+				{
+					materialList[mat->id] = mat;
+					pages[lineNum].length++;
+				}
+				else
+					std::cout << "Error: something went wrong when trying to load the material file '" << entry.path() << "', uh oh!" << std::endl;
+			}
+		
+		lineNum++;
+	}
 
 	currentInstance = this;
 }
@@ -44,14 +77,14 @@ std::string MaterialManager::GetMaterialName(int id)
 
 int MaterialManager::GetPageLength(int page) const
 {
-	if (page < pages.size())
+	if ((size_t)page < pages.size())
 		return pages[page].length;
 	return 0;
 }
 
 std::string MaterialManager::GetPageName(int page) const
 {
-	if (page < pages.size())
+	if ((size_t)page < pages.size())
 		return pages[page].name;
 	return "error_invalid_page";
 }
@@ -68,7 +101,7 @@ LevelMaterial* MaterialManager::CreateMaterialFromFile(const std::string& filepa
 	std::ifstream stream(filepath);
 	if (!stream.is_open())
 	{
-		std::cout << "SpriteSheetMaterial failed to open file: " << filepath << std::endl;
+		std::cout << "MaterialManager failed to open file: " << filepath << std::endl;
 		return nullptr;
 	}
 
@@ -185,6 +218,9 @@ LevelMaterial* MaterialManager::CreateMaterialFromFile(const std::string& filepa
 		mat->LoadSprites(auxFilepath);
 		return mat->Init(id);
 	}
+
+	// uh oh
+	return nullptr;
 }
 
 MaterialManager* MaterialManager::currentInstance = nullptr;
@@ -199,7 +235,7 @@ LevelMaterial* MaterialManager::GetMaterialFromId(int id) const
 bool MaterialManager::ValidMaterial(int id) const
 {
 	int page = id / 16;
-	return page < pages.size() && (id % 16) < pages[page].length;
+	return (size_t)page < pages.size() && (id % 16) < pages[page].length;
 }
 
 LevelMaterial::LevelMaterial(const v3& editorCol, const std::string& materialName)
@@ -212,6 +248,6 @@ LevelMaterial* LevelMaterial::Init(int materialId)
 	return this;
 }
 
-MaterialManager::PageData::PageData(const std::string& pageName, int pageLength)
-	: name(pageName), length(pageLength)
+MaterialManager::PageData::PageData(const std::string& pageName)
+	: name(pageName)
 { }
