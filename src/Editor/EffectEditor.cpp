@@ -13,8 +13,8 @@ void EffectEditor::SetupTools()
 {
 	effects = new EffectManager();
 
-	tools.push_back(new TileEffectTool(target, "geometry_draw_icon.png"));
-	tools.push_back(new GranularEffectTool(target, "geometry_boxfill_icon.png"));
+	tools.push_back((new TileEffectTool(target, "geometry_draw_icon.png"))->Init(this));
+	tools.push_back((new GranularEffectTool(target, "geometry_boxfill_icon.png"))->Init(this));
 	tools[0]->enabled = false;
 	tools[1]->enabled = false;
 }

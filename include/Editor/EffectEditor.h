@@ -17,7 +17,7 @@ public:
 
 private:
 	class EffectManager* effects = nullptr;
-	struct Effect* selectedEffect = nullptr;
+	class Effect* selectedEffect = nullptr;
 };
 
 class TileEffectTool : public EditorTool
@@ -27,6 +27,7 @@ public:
 
 	void OnHoldClick(bool shift, bool ctrl, const v2i& pos) override;
 
+	inline TileEffectTool* Init(EffectEditor* p) { parent = p; return this; }
 	EffectEditor* parent = nullptr;
 };
 
@@ -37,5 +38,6 @@ public:
 
 	void OnHoldClick(bool shift, bool ctrl, const v2i& pos) override;
 
+	inline GranularEffectTool* Init(EffectEditor* p) { parent = p; return this; }
 	EffectEditor* parent = nullptr;
 };

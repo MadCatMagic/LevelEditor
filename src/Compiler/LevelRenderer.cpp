@@ -14,6 +14,7 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 	cam = camera;
 	PixelTexture2D* normal = new PixelTexture2D();
 	PixelTexture2D* tex = new PixelTexture2D();
+	normal->CreateTexture(cam.pixelSize);
 	tex->CreateTexture(cam.pixelSize);
 	v4* normalData = normal->GetRawData();
 	v4* data = tex->GetRawData();
@@ -83,7 +84,7 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 	// apply effects
 	for (int i = 0; i < (int)EffectManager::instance->GetNumEffects(); i++)
 	{
-		EffectManager::instance->GetEffect(i)->ProcessImage(normal, tex);
+		EffectManager::instance->GetEffect(i)->ProcessImage(camera.position - camera.dimensions * 0.5f, camera.dimensions, normal, tex);
 	}
 
 	tex->UpdateTexture();

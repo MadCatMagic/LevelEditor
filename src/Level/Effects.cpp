@@ -14,10 +14,13 @@ Effect::~Effect()
 		delete effectMap.tex;
 }
 
+EffectManager* EffectManager::instance = nullptr;
+
 EffectManager::EffectManager()
 {
 	effects.push_back(new Effect("Nothing Effect :)", v3(0.0f, 1.0f, 1.0f)));
 	effects.push_back(new AgeEffect());
+	instance = this;
 }
 
 EffectManager::~EffectManager()

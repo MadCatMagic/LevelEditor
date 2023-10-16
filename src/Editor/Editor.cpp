@@ -53,7 +53,7 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
     editors.push_back(new GeometryEditor(level, this));
     editors.push_back(new MaterialEditor(level, this));
     editors.push_back(new LogicEditor(level, this));
-    editors.push_back(new EffectsEditor(level, this));
+    editors.push_back(new EffectEditor(level, this));
     ChangeEditor(EditorMode::Geometry);
 
     for (size_t i = 0; i < editors.size(); i++)
@@ -198,6 +198,9 @@ void Editor::RenderUI(ImGuiIO* io)
     ImGui::SameLine();
     if (ImGui::Button("Logic Editor"))
         ChangeEditor(EditorMode::Logic);
+    ImGui::SameLine();
+    if (ImGui::Button("Effect Editor"))
+        ChangeEditor(EditorMode::Effect);
 
     // tool option menu
     for (int i = 0; i < (int)editors[mode]->tools.size(); i++)

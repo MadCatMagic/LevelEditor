@@ -3,7 +3,7 @@
 #include <vector>
 #include <unordered_map>
 
-struct Effect
+class Effect
 {
 	Effect(const std::string& displayName, const v3& editorTint);
 	~Effect();
@@ -12,7 +12,7 @@ struct Effect
 	
 	bool perTile = true;
 
-	virtual void ProcessImage(class PixelTexture2D* normal, PixelTexture2D* colour) { };
+	virtual void ProcessImage(const v2& bottomLeft, const v2& camSize, class PixelTexture2D* normal, PixelTexture2D* colour) { };
 
 	class GranularMap
 	{

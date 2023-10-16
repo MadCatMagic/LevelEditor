@@ -30,7 +30,7 @@ public:
 private:
 	
 
-	enum EditorMode {Geometry = 0, Material = 1, Logic = 2};
+	enum EditorMode {Geometry = 0, Material = 1, Logic = 2, Effect = 3};
 	EditorMode mode = EditorMode::Geometry;
 
 	int GetIndex(const v2i& pos) const;

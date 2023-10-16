@@ -31,7 +31,7 @@ void GeometryEditor::Render()
 
         EditorGizmos::SetColour(v4(1.0f, col1, col2, 0.5f));
         for (int i = 0; i < (int)segment.vec.size() - segment.isLoop * 3 - 1; i++)
-            EditorGizmos::DrawLine(segment.vec[i], segment.vec[i + 1], 2.0f);
+            EditorGizmos::DrawLine(segment.vec[i], segment.vec[(size_t)i + 1], 2.0f);
     }
 }
 
