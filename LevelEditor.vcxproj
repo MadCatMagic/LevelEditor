@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Editor\EffectEditor.cpp" />
+    <ClCompile Include="src\Level\Effects.cpp" />
     <ClCompile Include="src\Level\SpriteSheet.cpp" />
     <ClCompile Include="src\Compiler\LevelRenderer.cpp" />
     <ClCompile Include="src\Editor\LogicEditor.cpp" />
@@ -67,6 +69,7 @@
     <ClInclude Include="include\Compiler\Compiler.h" />
     <ClInclude Include="include\Editor\EditorGizmos.h" />
     <ClInclude Include="include\Editor\Editor.h" />
+    <ClInclude Include="include\Editor\EffectEditor.h" />
     <ClInclude Include="include\Editor\GeometryEditor.h" />
     <ClInclude Include="include\Editor\GeometryTool.h" />
     <ClInclude Include="include\Editor\MaterialEditor.h" />
@@ -86,6 +89,7 @@
     <ClInclude Include="include\Engine\Texture\Texture.h" />
     <ClInclude Include="include\Engine\Texture\Texture2D.h" />
     <ClInclude Include="include\Level\AreaTrigger.h" />
+    <ClInclude Include="include\Level\Effects.h" />
     <ClInclude Include="include\Level\Entity.h" />
     <ClInclude Include="include\Level\Level.h" />
     <ClInclude Include="include\Level\LevelMaterial.h" />

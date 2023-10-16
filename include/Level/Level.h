@@ -35,8 +35,11 @@ struct TileChunk
 class Level
 {
 public:
+	static Level* instance;
+
 	friend class FileManager;
 	friend class Compiler;
+	friend class Effect;
 
 	Level(const v2i& chunkDimensions);
 	~Level();

@@ -22,8 +22,8 @@ public:
 	inline v4* GetRawData() { return textureData; }
 	inline Texture2D* GetTexture() { return target; }
 
-	inline v4 At(int index) const { return textureData[index]; }
-	inline v4 At(const v2i& coord) const { return textureData[CoordToIndex(coord)]; }
+	inline v4& At(int index) const { return textureData[index]; }
+	inline v4& At(const v2i& coord) const { return textureData[CoordToIndex(coord)]; }
 
 private:
 	void ReadDataFromTexture();

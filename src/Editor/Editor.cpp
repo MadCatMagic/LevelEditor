@@ -12,6 +12,7 @@
 #include "Editor/GeometryEditor.h"
 #include "Editor/MaterialEditor.h"
 #include "Editor/LogicEditor.h"
+#include "Editor/EffectEditor.h"
 
 #include "tracy/Tracy.hpp"
 
@@ -52,6 +53,7 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
     editors.push_back(new GeometryEditor(level, this));
     editors.push_back(new MaterialEditor(level, this));
     editors.push_back(new LogicEditor(level, this));
+    editors.push_back(new EffectsEditor(level, this));
     ChangeEditor(EditorMode::Geometry);
 
     for (size_t i = 0; i < editors.size(); i++)
@@ -203,6 +205,9 @@ void Editor::RenderUI(ImGuiIO* io)
         ImGui::PushID(i); // probably not that necessary
         unsigned int targetTex = editors[mode]->tools[i]->GetTextureID();
 
+        // tint it if it is disabled
+        float disabledColour = 0.5f + 0.5f * (float)editors[mode]->tools[i]->enabled;
+           ImGui::BeginDisabled(!editors[mode]->tools[i]->enabled);
         if (ImGui::ImageButton(
             "",
             (void*)targetTex,//(void*)tools[i]->GetTextureID(),
@@ -210,12 +215,14 @@ void Editor::RenderUI(ImGuiIO* io)
             ImVec2(0.0f, 0.0f),             // uv coordinates for lower left
             ImVec2(1.0f, 1.0f),             // uv coordinates for top right
             ImVec4(0.0f, 0.0f, 0.0f, 1.0f), // black background
-            ImVec4(1.0f, 1.0f, 1.0f, 1.0f)  // no tint
+            ImVec4(disabledColour, disabledColour, disabledColour, 1.0f)  // no tint
         ))
         {
             selectedTool = editors[mode]->tools[i];
             editors[mode]->selectedTool = i;
         }
+        ImGui::EndDisabled();
+
         ImGui::PopID();
         ImGui::SameLine();
     }

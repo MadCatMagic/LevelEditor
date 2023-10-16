@@ -7,6 +7,8 @@
 #include "Engine/SpriteRenderer.h"
 #include "Compiler/LevelRenderer.h"
 
+Level* Level::instance = nullptr;
+
 Level::Level(const v2i& chunkDimensions)
 {
 	this->dimensions = chunkDimensions * TILE_CHUNK_SIZE;
@@ -17,6 +19,7 @@ Level::Level(const v2i& chunkDimensions)
 			CreateChunk(v2i(x, y));
 		}
 
+	instance = this;
 	//tileData = new TileData[dimensions.x * dimensions.y];
 }
 

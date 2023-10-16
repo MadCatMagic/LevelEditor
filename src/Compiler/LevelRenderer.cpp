@@ -1,6 +1,7 @@
 #include "Compiler/LevelRenderer.h"
 #include "Level/Level.h"
 #include "Level/LevelMaterial.h"
+#include "Level/Effects.h"
 
 LevelRenderer::LevelRenderer(Level* l)
 	: level(l)
@@ -11,8 +12,10 @@ LevelRenderer::LevelRenderer(Level* l)
 PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 {
 	cam = camera;
+	PixelTexture2D* normal = new PixelTexture2D();
 	PixelTexture2D* tex = new PixelTexture2D();
 	tex->CreateTexture(cam.pixelSize);
+	v4* normalData = normal->GetRawData();
 	v4* data = tex->GetRawData();
 
 	// precompute certain values that will be constant for each tile
@@ -67,7 +70,7 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 			TileRenderData trd = renderData[tileRenderDataPos.x][tileRenderDataPos.y];
 
 			if (trd.solid)
-				data[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = trd.mat->GetDataAtPoint(realPos, trd);
+				normalData[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = trd.mat->GetDataAtPoint(realPos, trd);
 
 			/*
 			TileData* t = level->GetTile(lower, 0);
@@ -77,8 +80,16 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 			*/
 		}
 
+	// apply effects
+	for (int i = 0; i < (int)EffectManager::instance->GetNumEffects(); i++)
+	{
+		EffectManager::instance->GetEffect(i)->ProcessImage(normal, tex);
+	}
+
 	tex->UpdateTexture();
-	return tex;
+	normal->UpdateTexture();
+	delete tex;
+	return normal;
 }
 
 v2i LevelRenderer::WorldToPixel(const v2& position) const

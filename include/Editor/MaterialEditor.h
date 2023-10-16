@@ -15,8 +15,6 @@ public:
 
 private:
 	MaterialManager* mats;
-
-	int selectedTool = 0;
 };
 
 class MaterialTool : public EditorTool

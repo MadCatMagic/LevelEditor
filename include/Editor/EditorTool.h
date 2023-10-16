@@ -21,6 +21,8 @@ public:
 	inline void SetLevel(Level* l) { level = l; }
 	inline void SetLayer(int l) { layer = l; }
 
+	bool enabled = true;
+
 protected:
 	Level* level;
 	int layer = 0;
