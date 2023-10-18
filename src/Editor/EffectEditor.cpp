@@ -27,6 +27,9 @@ void EffectEditor::Render()
 
 	if (selectedEffect->perTile)
 	{
+		// just trim the chunks now i guess
+		selectedEffect->effectMap.tiles->TrimChunks();
+
 		for each (auto & pair in selectedEffect->effectMap.tiles->map)
 			for (int yoff = 0; yoff < TILE_CHUNK_SIZE; yoff++)
 				for (int xoff = 0; xoff < TILE_CHUNK_SIZE; xoff++)
@@ -40,10 +43,15 @@ void EffectEditor::Render()
 						selectedEffect->editorTint.x,
 						selectedEffect->editorTint.y,
 						selectedEffect->editorTint.z,
-						val * (1.0f / 15.0f)
+						val / 15.0f
 					));
 					EditorGizmos::DrawRect((v2)pos + v2(0.5f), v2::one);
 				}
+
+		// for testing, render the outline of active chunks
+		EditorGizmos::SetColour(v4(1.0f, 1.0f, 0.0f, 0.2f));
+		for each (auto & pair in selectedEffect->effectMap.tiles->map)
+			EditorGizmos::DrawRectOutline(pair.first * 16, pair.first * 16 + v2i(16), 2.0f);
 	}
 	else
 	{
@@ -86,8 +94,8 @@ void EffectEditor::OnReload()
 void TileEffectTool::OnHoldClick(bool shift, bool ctrl, const v2i& pos)
 {
 	int value = parent->selectedEffect->effectMap.tiles->GetTile(pos);
-	if (value != -1)
-		parent->selectedEffect->effectMap.tiles->SetTile(pos, value + 1 - shift * 2);
+	int newv = std::min(std::max(value + 1 - shift * 2, 0), 15);
+	parent->selectedEffect->effectMap.tiles->SetTile(pos, newv);
 }
 
 void GranularEffectTool::OnHoldClick(bool shift, bool ctrl, const v2i& pos)

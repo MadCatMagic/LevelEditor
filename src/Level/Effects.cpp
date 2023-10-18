@@ -70,11 +70,11 @@ void Effect::TileMap::CreateChunk(const v2i& chunkPos)
 
 void Effect::TileMap::AddChunk(const v2i& chunkPos, std::vector<uint64_t> chunk)
 {
-	if (chunk.size() < 16)
-		for (int i = 0; i < 16 - chunk.size(); i++)
+	if ((int)chunk.size() < 16)
+		for (int i = 0; i < 16 - (int)chunk.size(); i++)
 			chunk.push_back(0);
-	else if (chunk.size() > 16)
-		for (int i = 0; i < chunk.size() - 16; i++)
+	else if ((int)chunk.size() > 16)
+		for (int i = 0; i < (int)chunk.size() - 16; i++)
 			chunk.pop_back();
 	data.push_back(chunk);
 	map[chunkPos] = data.size() - 1;
@@ -89,7 +89,9 @@ void Effect::TileMap::SetData(const std::string& str)
 {
 }
 
-int Effect::TileMap::GetTile(const v2i& pos)
+// when you are simply getting the data, nothing matters particularly so don't bother creating any new chunks
+// can return zero as a default value since any call to SetTile will create that empty value.
+int Effect::TileMap::GetTile(const v2i& pos) const
 {
 	v2i offset;
 	v2i div;
@@ -97,29 +99,65 @@ int Effect::TileMap::GetTile(const v2i& pos)
 	{
 		uint64_t mask = 15ll << (offset.x * 4);
 		// bitshifting has a higher precedence than binary and
-		return (data[map[div]][offset.y] & mask) >> (offset.x * 4);
+		return (data[map.at(div)][offset.y] & mask) >> (offset.x * 4);
 	}
-	return -1;
+	return 0;
 }
 
+// if you try and get a tile that is not a valid position, create a new chunk there in order to create that position
 void Effect::TileMap::SetTile(const v2i& pos, int newValue)
 {
 	v2i offset;
 	v2i div;
-	if (ValidPosition(pos, &div, &offset))
+
+	// if not a valid position create a chunk there
+	// handily the ValidPosition function fills in div and offset regardless
+	if (!ValidPosition(pos, &div, &offset))
+		CreateChunk(div);
+
+	// we can always do this as there should always be a chunk there now
+	uint64_t mask = 15ll << (offset.x * 4);
+	data[map[div]][offset.y] = data[map[div]][offset.y] & ~mask | ((uint64_t)newValue << (offset.x * 4)) & mask;
+}
+
+void Effect::TileMap::TrimChunks()
+{
+	// don't want to delete chunks in the loop as it would cause iteration problems
+	std::vector<v2i> chunksToDelete;
+
+	for each (auto & pair in map)
 	{
-		uint64_t mask = 15ll << (offset.x * 4);
-		data[map[div]][offset.y] = (data[map[div]][offset.y] ^ mask) | (((uint64_t)newValue << (offset.x * 4)) & mask);
+		// check if chunk is empty
+		bool empty = true;
+		for (int i = 0; i < TILE_CHUNK_SIZE; i++)
+			if (data[pair.second][i] != 0)
+				empty = false;
+
+		// delete if empty
+		if (empty)
+			chunksToDelete.push_back(pair.first);
+	}
+
+	// delete all the marked chunks
+	// O(n^2) but shouldnt really matter too much
+	for each (const v2i& pos in chunksToDelete)
+	{
+		size_t index = map[pos];
+		data.erase(data.begin() + index);
+		map.erase(pos);
+		for each (auto& pair in map)
+			if (pair.second > index)
+				map[pair.first]--;
 	}
 }
 
-bool Effect::TileMap::ValidPosition(const v2i& pos, v2i* div, v2i* xoffset)
+bool Effect::TileMap::ValidPosition(const v2i& pos, v2i* div, v2i* offset) const
 {
 	// so here, if pos.x or pos.y < 0 then the division results in div being 0,0 which is wrong, 
 	// so if it is negative, subtract 16,16 to offset this
-	// same reasoning for xoffset, should be 16 - div
+	// same reasoning for xoffset, should be 16 - offset
 	v2i negative = v2i(pos.x < 0, pos.y < 0);
 	*div = v2i((pos.x - 16 * negative.x) / 16, (pos.y - 16 * negative.y) / 16);
-	*xoffset = negative * 16 + v2i(((negative.x ? -1 : 1) * pos.x) % 16, ((negative.y ? -1 : 1) * pos.y) % 16);
+	*offset = negative * 16 + v2i(((negative.x ? -1 : 1) * pos.x) % 16, ((negative.y ? -1 : 1) * pos.y) % 16);
 	return map.find(*div) != map.end();
 }

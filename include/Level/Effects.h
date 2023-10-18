@@ -33,14 +33,19 @@ struct Effect
 		void SetData(const std::string& str);
 
 		// returns 0-15
-		int GetTile(const v2i& pos);
+		int GetTile(const v2i& pos) const;
 		// newValue must be 0-15
 		void SetTile(const v2i& pos, int newValue);
 
 		std::unordered_map<v2i, size_t, vecHash::KeyHash<v2i, int>, vecHash::KeyEqual<v2i>> map;
 
+		// call at the end of every frame to make sure that no chunks are empty/delete them if they are
+		// maybe in future if there are too many chunks could optimise by adding an extra flag for when a value is set in a chunk
+		// and only check the chunks with that flag set
+		void TrimChunks();
+
 	private:
-		bool ValidPosition(const v2i& pos, v2i* div, v2i* xoffset);
+		bool ValidPosition(const v2i& pos, v2i* div, v2i* offset) const;
 
 		std::vector<std::vector<uint64_t>> data;
 	};
