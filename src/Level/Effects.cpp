@@ -44,8 +44,8 @@ void AgeEffect::ProcessImage(const v2& bottomLeft, const v2& camSize, PixelTextu
 		for (int x = 0; x < size.x; x++)
 		{
 			v4& ref = normal->At(v2i(x, y));
-			int t = effectMap.tiles->GetTile((v2i)(bottomLeft + v2::Scale(camSize, v2(x / (float)size.x, y / (float)size.y)) * 0.5f));
-			ref = ref * 0.5f + v4(editorTint * t / 30.0f);
+			int t = effectMap.tiles->GetTile((v2i)(bottomLeft + v2::Scale(camSize, v2(x / (float)size.x, y / (float)size.y))));
+			ref = ref * 0.5f + v4(editorTint * (float)t / 30.0f);
 		}
 }
 
@@ -96,7 +96,8 @@ int Effect::TileMap::GetTile(const v2i& pos)
 	if (ValidPosition(pos, &div, &offset))
 	{
 		uint64_t mask = 15ll << (offset.x * 4);
-		return data[map[div]][offset.y] & mask >> (offset.x * 4);
+		// bitshifting has a higher precedence than binary and
+		return (data[map[div]][offset.y] & mask) >> (offset.x * 4);
 	}
 	return -1;
 }
@@ -108,13 +109,17 @@ void Effect::TileMap::SetTile(const v2i& pos, int newValue)
 	if (ValidPosition(pos, &div, &offset))
 	{
 		uint64_t mask = 15ll << (offset.x * 4);
-		data[map[div]][offset.y] = data[map[div]][offset.y] ^ mask | ((uint64_t)newValue << (offset.x * 4)) & mask;
+		data[map[div]][offset.y] = (data[map[div]][offset.y] ^ mask) | (((uint64_t)newValue << (offset.x * 4)) & mask);
 	}
 }
 
 bool Effect::TileMap::ValidPosition(const v2i& pos, v2i* div, v2i* xoffset)
 {
-	*div = v2i(pos.x / 16, pos.y / 16);
-	*xoffset = v2i(pos.x % 16, pos.y % 16);
+	// so here, if pos.x or pos.y < 0 then the division results in div being 0,0 which is wrong, 
+	// so if it is negative, subtract 16,16 to offset this
+	// same reasoning for xoffset, should be 16 - div
+	v2i negative = v2i(pos.x < 0, pos.y < 0);
+	*div = v2i((pos.x - 16 * negative.x) / 16, (pos.y - 16 * negative.y) / 16);
+	*xoffset = negative * 16 + v2i(((negative.x ? -1 : 1) * pos.x) % 16, ((negative.y ? -1 : 1) * pos.y) % 16);
 	return map.find(*div) != map.end();
 }

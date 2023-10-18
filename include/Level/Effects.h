@@ -3,7 +3,7 @@
 #include <vector>
 #include <unordered_map>
 
-class Effect
+struct Effect
 {
 	Effect(const std::string& displayName, const v3& editorTint);
 	~Effect();
@@ -16,7 +16,7 @@ class Effect
 
 	class GranularMap
 	{
-		
+		// todo
 	};
 
 	class TileMap
@@ -37,11 +37,12 @@ class Effect
 		// newValue must be 0-15
 		void SetTile(const v2i& pos, int newValue);
 
+		std::unordered_map<v2i, size_t, vecHash::KeyHash<v2i, int>, vecHash::KeyEqual<v2i>> map;
+
 	private:
 		bool ValidPosition(const v2i& pos, v2i* div, v2i* xoffset);
 
 		std::vector<std::vector<uint64_t>> data;
-		std::unordered_map<v2i, size_t, vecHash::KeyHash<v2i, int>, vecHash::KeyEqual<v2i>> map;
 	};
 
 	union effectMapping
@@ -70,5 +71,5 @@ struct AgeEffect : public Effect
 {
 	AgeEffect();
 	
-	void ProcessImage(const v2& bottomLeft, const v2& camSize, class PixelTexture2D* normal, PixelTexture2D* colour) override;
+	void ProcessImage(const v2& bottomLeft, const v2& camSize, PixelTexture2D* normal, PixelTexture2D* colour) override;
 };

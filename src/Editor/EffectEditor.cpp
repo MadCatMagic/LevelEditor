@@ -1,5 +1,6 @@
 #include "Editor/EffectEditor.h"
 #include "Level/Effects.h"
+#include "Editor/EditorGizmos.h"
 
 #include "imgui.h"
 
@@ -21,7 +22,33 @@ void EffectEditor::SetupTools()
 
 void EffectEditor::Render()
 {
-	
+	if (selectedEffect == nullptr)
+		return;
+
+	if (selectedEffect->perTile)
+	{
+		for each (auto & pair in selectedEffect->effectMap.tiles->map)
+			for (int yoff = 0; yoff < TILE_CHUNK_SIZE; yoff++)
+				for (int xoff = 0; xoff < TILE_CHUNK_SIZE; xoff++)
+				{
+					v2i pos = v2i(xoff, yoff) + pair.first * 16;
+					int val = selectedEffect->effectMap.tiles->GetTile(pos);
+					if (val == 0)
+						continue;
+
+					EditorGizmos::SetColour(v4(
+						selectedEffect->editorTint.x,
+						selectedEffect->editorTint.y,
+						selectedEffect->editorTint.z,
+						val * (1.0f / 15.0f)
+					));
+					EditorGizmos::DrawRect((v2)pos + v2(0.5f), v2::one);
+				}
+	}
+	else
+	{
+		// todo
+	}
 }
 
 void EffectEditor::RenderUI()

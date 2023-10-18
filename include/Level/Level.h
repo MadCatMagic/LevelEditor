@@ -39,7 +39,7 @@ public:
 
 	friend class FileManager;
 	friend class Compiler;
-	friend class Effect;
+	friend struct Effect;
 
 	Level(const v2i& chunkDimensions);
 	~Level();

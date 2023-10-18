@@ -17,7 +17,7 @@ public:
 
 private:
 	class EffectManager* effects = nullptr;
-	class Effect* selectedEffect = nullptr;
+	struct Effect* selectedEffect = nullptr;
 };
 
 class TileEffectTool : public EditorTool

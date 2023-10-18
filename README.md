@@ -12,7 +12,10 @@ A level editor designed to be integrated with ~~Unity~~ Godot (or any other engi
 
 #### Materials and Rendering
 - Allows for editing the materials of geometry
-- (Rendering WIP)
+- Materials are defined in .mat files that are loaded using a custom plaintext format
+- Materials can also define extra behaviour in code
+- Effects apply programmatic effects to the whole scene according to a weight map for where they have the most effect.
+- Camera entities render the scene, but the actual render pipeline is still work in progress.
 
 #### Game Logic
 - Allows for placing basic 'entities' that can be given names and have different functionalities, e.g. cameras.
