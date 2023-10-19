@@ -1,4 +1,8 @@
 #include "Level/Effects.h"
+#include "Level/Level.h"
+#include "Engine/PixelTexture2D.h"
+
+#include <sstream>
 
 Effect::Effect(const std::string& displayName, const v3& tint)
 	: name(displayName), editorTint(tint)
@@ -18,9 +22,8 @@ EffectManager* EffectManager::instance = nullptr;
 
 EffectManager::EffectManager()
 {
-	effects.push_back(new Effect("Nothing Effect :)", v3(0.0f, 1.0f, 1.0f)));
-	effects.push_back(new AgeEffect());
 	instance = this;
+	ReloadEffects();
 }
 
 EffectManager::~EffectManager()
@@ -30,13 +33,32 @@ EffectManager::~EffectManager()
 	effects.clear();
 }
 
+void EffectManager::ReloadEffects()
+{
+	for each (Effect * e in effects)
+		delete e;
+	effects.clear();
+
+	effects.push_back(new Effect("Nothing Effect :)", v3(0.0f, 1.0f, 1.0f)));
+	effects.push_back(new AgeEffect());
+}
+
+Effect* EffectManager::GetEffectFromName(const std::string& name)
+{
+	// just do linear search, few enough effects and few enough calls it is fine
+	for (size_t i = 0; i < effects.size(); i++)
+		if (effects[i]->name == name)
+			return effects[i];
+
+	return nullptr;
+}
+
 AgeEffect::AgeEffect()
 	: Effect("Ageing", v3(0.6f, 0.8f, 0.2f))
 { 
 	effectMap.tiles = new TileMap();
 }
 
-#include "Engine/PixelTexture2D.h"
 void AgeEffect::ProcessImage(const v2& bottomLeft, const v2& camSize, PixelTexture2D* normal, PixelTexture2D* colour)
 {
 	v2i size = v2i(normal->GetTexture()->width, normal->GetTexture()->height);
@@ -49,7 +71,6 @@ void AgeEffect::ProcessImage(const v2& bottomLeft, const v2& camSize, PixelTextu
 		}
 }
 
-#include "Level/Level.h"
 Effect::TileMap::TileMap()
 {
 	for each (auto & pair in Level::instance->chunkMap)
@@ -82,11 +103,74 @@ void Effect::TileMap::AddChunk(const v2i& chunkPos, std::vector<uint64_t> chunk)
 
 std::string Effect::TileMap::GetData() const
 {
-	return "";
+	std::string str;
+	for each (auto& pair in map)
+	{
+		// seperator and chunk position
+		auto& chunk = data[pair.second];
+		str.append(std::to_string(pair.first.x) + "," + std::to_string(pair.first.y) + ",;");
+
+		// actual chunk data
+		for (int i = 0; i < 16; i++)
+			for (int j = 0; j < 8; j++)
+			{
+				uint64_t num = chunk[i] >> (j * 8) & 0xffll;
+				str.push_back((const char)num);
+			}
+	}
+
+	return str;
 }
 
 void Effect::TileMap::SetData(const std::string& str)
 {
+	std::stringstream stream(str);
+	char c;
+
+	bool inPos = false;
+	bool readingPosX = true;
+	v2i pos;
+	std::string acc;
+
+	int counter = 0;
+	size_t index = 0;
+
+	while (stream.get(c))
+	{
+		if (c == ';')
+			inPos = false;
+
+		if (inPos)
+		{
+			if (c == ',')
+			{
+				if (readingPosX)
+					pos.x = std::stoi(acc);
+				else
+					pos.y = std::stoi(acc);
+				acc = "";
+				readingPosX = !readingPosX;
+
+				// create chunk
+				CreateChunk(pos);
+				index = map[pos];
+			}
+			else
+				acc.push_back(c);
+		}
+		else
+		{
+			int y = counter / 8;
+			int twox = counter % 8;
+			data[index][y] += (uint64_t)c << (twox * 8);
+			counter++;
+			if (counter == 128)
+			{
+				inPos = true;
+				counter = 0;
+			}
+		}
+	}
 }
 
 // when you are simply getting the data, nothing matters particularly so don't bother creating any new chunks

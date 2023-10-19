@@ -1,6 +1,8 @@
 #include "Compiler/FileManager.h"
 #include "Level/Level.h"
 
+#include "Level/Effects.h"
+
 #include <sstream>
 #include <fstream>
 
@@ -53,6 +55,27 @@ void FileManager::SaveLevel(Level* level, const std::string& filename)
                     stream << std::to_string(t.solid) << std::to_string(t.slant) << std::to_string(t.material) << ",";
                 }
     }
+    stream << "~";
+
+    // finally we have the effect maps, 
+    // signed by their name so that if the effect list order changes nothing unsavoury happens
+    for (int i = 0; i < (int)EffectManager::instance->GetNumEffects(); i++)
+    {
+        Effect* effect = EffectManager::instance->GetEffect(i);
+        stream << effect->name << "#";
+        if (effect->perTile)
+        {
+            std::string data = effect->effectMap.tiles->GetData();
+            stream << data.size() << "#";
+            stream << data;
+        }
+        else 
+        {
+            // todo
+        }
+        stream << ";";
+    }
+    stream << "~";
 
     std::ofstream writeStream = std::ofstream("levels/" + filename + ".lvl", std::ios::out | std::ios::trunc);
     std::string s = stream.str();
@@ -186,6 +209,8 @@ Level* FileManager::LoadLevel(const std::string& filename)
 
     while (stream.get(c))
     {
+        if (c == '~')
+            break;
         if (c == 'c')
             continue;
         if (!readingChunkPos && c == '#')
@@ -266,6 +291,72 @@ Level* FileManager::LoadLevel(const std::string& filename)
     // at the end ensure to add the last chunk
     level->CreateChunk(chunk);
     level->dimensions = (max - min + v2i::one) * TILE_CHUNK_SIZE;
+
+    // finally to do all the effect stuff
+    bool readingEffectName = true;
+    bool readingLength = false;
+    std::string effectName;
+    std::string effectData;
+
+    size_t length = 0;
+    int counter = 0;
+    accumulate = "";
+
+    // make sure to empty all the existing data
+    EffectManager::instance->ReloadEffects();
+
+    while (stream.get(c))
+    {
+        if (readingEffectName)
+        {
+            if (c == '~')
+                break;
+            else if (c == '#')
+            {
+                readingEffectName = false;
+                readingLength = true;
+            }
+            else if (c == ';')
+            {
+                counter = 0;
+                // effect data must be done reading, try to dispatch to effect
+                Effect* e = EffectManager::instance->GetEffectFromName(effectName);
+                // make sure the effect name actually refers to an effect
+                if (e == nullptr)
+                {
+                    std::cout << "Error: effect name '" << effectName << "' appears to not exist and so cannot be loaded from file." << std::endl;
+                    continue;
+                }
+
+                if (e->perTile)
+                    e->effectMap.tiles->SetData(effectData);
+                else
+                {
+                    // todo
+                }
+            }
+            else
+                effectName.push_back(c);
+        }
+        else if (readingLength)
+        {
+            if (c == '#')
+            {
+                length = std::stol(accumulate);
+                readingLength = false;
+                accumulate = "";
+            }
+            else
+                accumulate.push_back(c);
+        }
+        if (!readingLength && !readingEffectName && counter < length)
+        {
+            effectData.push_back(c);
+            counter++;
+        }
+        else
+            readingEffectName = true;
+    }
 
     stream.close();
     return level;
