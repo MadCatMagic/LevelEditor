@@ -24,9 +24,9 @@ void VertexArray::DisableAttribute(unsigned int index)
 	glDisableVertexAttribArray(index);
 }
 
-void VertexArray::FormatAttribute(unsigned int index, int size, GLenum type, bool normalized, int stride, void* pointer)
+void VertexArray::FormatAttribute(unsigned int index, size_t size, GLenum type, bool normalized, int stride, void* pointer)
 {
-	glVertexAttribPointer(index, size, type, false, stride, pointer);
+	glVertexAttribPointer(index, (GLint)size, type, false, stride, pointer);
 }
 
 void VertexArray::Construct()

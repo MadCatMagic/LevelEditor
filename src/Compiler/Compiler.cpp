@@ -219,7 +219,7 @@ std::vector<ColliderSegment> Compiler::CompileGeometry(int layer)
 int Compiler::StepThroughGeometry(int startingIndex, bool rhsIsSolid)
 {
     int forwards = startingIndex;
-    int numConnections = pointMap[pairs[forwards]].size();
+    int numConnections = (int)pointMap[pairs[forwards]].size();
     std::pair<v2, int> dirArray[8]{}; // can never be more than 8 outgoing edges
 
     if (numConnections == 1)

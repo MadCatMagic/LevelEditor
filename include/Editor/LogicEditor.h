@@ -1,5 +1,6 @@
 #pragma once
 #include "Editor/SpecificEditor.h"
+#include "Editor/LogicTool.h"
 
 class LogicEditor;
 
@@ -46,6 +47,8 @@ private:
 class LogicEditor : public SpecificEditor
 {
 public:
+	friend EntityTool;
+
 	using SpecificEditor::SpecificEditor;
 	~LogicEditor();
 
@@ -57,56 +60,11 @@ public:
 	void OnEditorActive() override;
 	void OnEditorInactive() override;
 
+	void Update() override;
+
 	void DeleteTrigger(AreaTrigger* t);
 	void DeleteEntity(Entity* e);
 
 private:
-	class EntityTool* entityPlaceTool = nullptr;
-
 	LogicInspector inspector;
-
-	std::vector<Entity*> baseEntityTypes;
-};
-
-class LogicTool : public EditorTool
-{
-public:
-	inline LogicTool(Level* t, const std::string& i) : EditorTool(t, i) { };
-
-	static inline void SetInspector(LogicInspector* i) { inspector = i; }
-
-protected:
-	static LogicInspector* inspector;
-};
-
-class EntityTool : public LogicTool
-{
-public:
-	using LogicTool::LogicTool;
-
-	void OnClick(bool shift, bool ctrl, const v2& exactPos) override;
-	void OnHoldClick(bool shift, bool ctrl, const v2& exactPos) override;
-	void OnReleaseClick(bool shift, bool ctrl, const v2& exactPos) override;
-
-	inline void SetEntityToPlace(Entity* e) { toPlace = e; }
-
-private:
-	Entity* toPlace = nullptr;
-
-	Entity* holdingEntity = nullptr;
-
-};
-
-class TriggerEditTool : public LogicTool
-{
-public:
-	using LogicTool::LogicTool;
-
-	void OnClick(bool shift, bool ctrl, const v2i& pos) override;
-	void OnHoldClick(bool shift, bool ctrl, const v2i& pos) override;
-	void OnReleaseClick(bool shift, bool ctrl, const v2i& pos) override;
-
-private:
-	bool holding = false;
-	v2i startPos;
 };

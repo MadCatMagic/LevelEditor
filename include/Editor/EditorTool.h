@@ -16,6 +16,8 @@ public:
 	inline virtual void OnHoldClick(bool shift, bool ctrl, const v2i& pos) {};
 	inline virtual void OnReleaseClick(bool shift, bool ctrl, const v2i& pos) {};
 
+	inline virtual void OnGUI() {};
+
 	unsigned int GetTextureID() const;
 
 	inline void SetLevel(Level* l) { level = l; }

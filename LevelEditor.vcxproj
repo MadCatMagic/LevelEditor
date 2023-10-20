@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Editor\EffectEditor.cpp" />
+    <ClCompile Include="src\Editor\LogicTool.cpp" />
     <ClCompile Include="src\Level\Effects.cpp" />
     <ClCompile Include="src\Level\SpriteSheet.cpp" />
     <ClCompile Include="src\Compiler\LevelRenderer.cpp" />
@@ -72,6 +73,7 @@
     <ClInclude Include="include\Editor\EffectEditor.h" />
     <ClInclude Include="include\Editor\GeometryEditor.h" />
     <ClInclude Include="include\Editor\GeometryTool.h" />
+    <ClInclude Include="include\Editor\LogicTool.h" />
     <ClInclude Include="include\Editor\MaterialEditor.h" />
     <ClInclude Include="include\Engine.h" />
     <ClInclude Include="include\Engine\Input.h" />

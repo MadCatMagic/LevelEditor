@@ -93,9 +93,34 @@ void EffectEditor::OnReload()
 
 void TileEffectTool::OnHoldClick(bool shift, bool ctrl, const v2i& pos)
 {
-	int value = parent->selectedEffect->effectMap.tiles->GetTile(pos);
-	int newv = std::min(std::max(value + 1 - shift * 2, 0), 15);
-	parent->selectedEffect->effectMap.tiles->SetTile(pos, newv);
+	static int counter = 0;
+	counter++;
+	if (counter > 8 - strength)
+		counter = 0;
+	
+	if (counter == 0)
+	{
+		int correctedStrength = std::max(1, strength - 7);
+		for (int yoff = -tileRange / 2; yoff <= tileRange / 2; yoff++)
+			for (int xoff = -tileRange / 2; xoff <= tileRange / 2; xoff++)
+			{
+				if (yoff * yoff + xoff * xoff > tileRange * tileRange)
+					continue;
+				float fo = 1.0f - std::powf((float)(yoff * yoff + xoff * xoff) / (tileRange * tileRange), falloff);
+				int value = parent->selectedEffect->effectMap.tiles->GetTile(pos + v2i(xoff, yoff));
+				int offset = correctedStrength * (1 - shift * 2);
+				int newv = std::min(std::max(value + (int)(fo * (float)offset), 0), 15);
+				parent->selectedEffect->effectMap.tiles->SetTile(pos + v2i(xoff, yoff), newv);
+			}
+	}
+}
+
+#include "imgui.h"
+void TileEffectTool::OnGUI()
+{
+	ImGui::SliderInt("Radius", &tileRange, 1, 5);
+	ImGui::SliderInt("Strength", &strength, 1, 15);
+	ImGui::SliderFloat("Falloff", &falloff, 0.01f, 1.0f);
 }
 
 void GranularEffectTool::OnHoldClick(bool shift, bool ctrl, const v2i& pos)

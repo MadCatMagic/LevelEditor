@@ -10,7 +10,7 @@ QuadRenderer::QuadRenderer(VAStructure structure)
 	{
 		auto pair = structure.Get(i);
 		va.EnableAttribute(i);
-		va.FormatAttribute(i, pair.first, pair.second, false, structure.Width() * sizeof(float), (void*)(cumulative * sizeof(float)));
+		va.FormatAttribute(i, pair.first, pair.second, false, (int)structure.Width() * (int)sizeof(float), (void*)(cumulative * sizeof(float)));
 		cumulative += pair.first;
 	}
 }

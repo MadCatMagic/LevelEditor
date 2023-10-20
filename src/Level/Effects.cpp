@@ -108,7 +108,7 @@ std::string Effect::TileMap::GetData() const
 	{
 		// seperator and chunk position
 		auto& chunk = data[pair.second];
-		str.append(std::to_string(pair.first.x) + "," + std::to_string(pair.first.y) + ",;");
+		str.append(std::to_string(pair.first.x) + "," + std::to_string(pair.first.y) + ",");
 
 		// actual chunk data
 		for (int i = 0; i < 16; i++)
@@ -127,7 +127,7 @@ void Effect::TileMap::SetData(const std::string& str)
 	std::stringstream stream(str);
 	char c;
 
-	bool inPos = false;
+	bool inPos = true;
 	bool readingPosX = true;
 	v2i pos;
 	std::string acc;
@@ -137,9 +137,6 @@ void Effect::TileMap::SetData(const std::string& str)
 
 	while (stream.get(c))
 	{
-		if (c == ';')
-			inPos = false;
-
 		if (inPos)
 		{
 			if (c == ',')
@@ -151,9 +148,13 @@ void Effect::TileMap::SetData(const std::string& str)
 				acc = "";
 				readingPosX = !readingPosX;
 
-				// create chunk
-				CreateChunk(pos);
-				index = map[pos];
+				if (readingPosX)
+				{
+					// create chunk
+					CreateChunk(pos);
+					index = map[pos];
+					inPos = false;
+				}
 			}
 			else
 				acc.push_back(c);
@@ -162,7 +163,7 @@ void Effect::TileMap::SetData(const std::string& str)
 		{
 			int y = counter / 8;
 			int twox = counter % 8;
-			data[index][y] += (uint64_t)c << (twox * 8);
+			data[index][y] += ((uint64_t)c & 0xffll) << (twox * 8);
 			counter++;
 			if (counter == 128)
 			{
@@ -242,6 +243,6 @@ bool Effect::TileMap::ValidPosition(const v2i& pos, v2i* div, v2i* offset) const
 	// same reasoning for xoffset, should be 16 - offset
 	v2i negative = v2i(pos.x < 0, pos.y < 0);
 	*div = v2i((pos.x - 16 * negative.x) / 16, (pos.y - 16 * negative.y) / 16);
-	*offset = negative * 16 + v2i(((negative.x ? -1 : 1) * pos.x) % 16, ((negative.y ? -1 : 1) * pos.y) % 16);
+	*offset = v2i((pos.x % 16 + 16) % 16, (pos.y % 16 + 16) % 16);
 	return map.find(*div) != map.end();
 }

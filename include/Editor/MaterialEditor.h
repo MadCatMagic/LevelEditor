@@ -24,8 +24,11 @@ public:
 
 	void OnHoldClick(bool shift, bool ctrl, const v2i& pos) override;
 
-	inline void SetToolReference(int* tool) { selectedTool = tool; }
+	void OnGUI() override;
+
+	inline void SetManager(MaterialManager* mm) { mats = mm; }
 
 private:
-	int* selectedTool = nullptr;
+	MaterialManager* mats = nullptr;
+	int selectedTool = 0;
 };

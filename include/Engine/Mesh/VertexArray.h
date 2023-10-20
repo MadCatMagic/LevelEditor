@@ -39,7 +39,7 @@ public:
 
 	void EnableAttribute(unsigned int index);
 	void DisableAttribute(unsigned int index);
-	void FormatAttribute(unsigned int index, int size, GLenum type, bool normalized, int stride, void* pointer);
+	void FormatAttribute(unsigned int index, size_t size, GLenum type, bool normalized, int stride, void* pointer);
 
 	void Construct();
 

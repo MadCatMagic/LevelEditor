@@ -334,6 +334,8 @@ Level* FileManager::LoadLevel(const std::string& filename)
                 {
                     // todo
                 }
+                effectData = "";
+                effectName = "";
             }
             else
                 effectName.push_back(c);
@@ -351,10 +353,11 @@ Level* FileManager::LoadLevel(const std::string& filename)
         }
         if (!readingLength && !readingEffectName && counter < length)
         {
-            effectData.push_back(c);
+            if (counter > 0)
+                effectData.push_back(c);
             counter++;
         }
-        else
+        else if (!readingLength)
             readingEffectName = true;
     }
 

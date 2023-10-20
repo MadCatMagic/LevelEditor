@@ -129,6 +129,10 @@ void Editor::Update()
     // rearranged:
     // viewerPosition 2 = pixelPos * (1 / (viewerScale1) - 1 / (viewerScale2)) / 16 + viewerPosition1
     viewerPosition = v2::Scale(pixelPos, v2::Reciprocal(prevViewerScale) - v2::Reciprocal(viewerScale)) / 16.0f + viewerPosition;
+
+    // do editor stuff
+    for each (SpecificEditor * editor in editors)
+        editor->Update();
 }
 
 void Editor::Render(RenderTexture* target)
@@ -174,20 +178,12 @@ void Editor::Render(RenderTexture* target)
 void Editor::RenderUI(ImGuiIO* io)
 {
     ZoneScoped;
-    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+    ImGui::Begin("Editor");
+
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
 
     ImGui::Text(("viewerPosition: " + viewerPosition.ToString() + " viewerScale: " + viewerScale.ToString()).c_str());
     ImGui::Text(("layer: " + std::to_string(currentLayer)).c_str());
-    //ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-    //ImGui::Checkbox("Another Window", &show_another_window);
-
-    //ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    //ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-    //if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-    //    counter++;
-    //ImGui::SameLine();
-    //ImGui::Text("counter = %d", counter);
 
     ImGui::Text("Editor modes:");
     if (ImGui::Button("Geometry Editor"))
@@ -231,28 +227,48 @@ void Editor::RenderUI(ImGuiIO* io)
     }
     ImGui::NewLine();
 
-    // level managing
-    static char fname[64] = "level0";
-    ImGui::InputText("File name", fname, 64);
-    if (ImGui::Button("Save Level"))
+    // tool gui options tab
+    if (selectedTool != nullptr)
     {
-        FileManager fm = FileManager();
-        fm.SaveLevel(level, std::string(fname));
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Load Level"))
-    {
-        FileManager fm = FileManager();
-        Level* l = fm.LoadLevel(std::string(fname));
-        if (l != nullptr)
-            ReloadLevel(l);
+        if (ImGui::CollapsingHeader("Tool options"))
+        {
+            ImGui::Indent();
+            selectedTool->OnGUI();
+            ImGui::Unindent();
+        }
+        ImGui::NewLine();
     }
 
+    // level managing tab
+    if (ImGui::CollapsingHeader("Level Saving/Loading"))
+    {
+        ImGui::Indent();
+        static char fname[64] = "level0";
+        ImGui::InputText("File name", fname, 64);
+        if (ImGui::Button("Save Level"))
+        {
+            FileManager fm = FileManager();
+            fm.SaveLevel(level, std::string(fname));
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Load Level"))
+        {
+            FileManager fm = FileManager();
+            Level* l = fm.LoadLevel(std::string(fname));
+            if (l != nullptr)
+                ReloadLevel(l);
+        }
+        ImGui::Unindent();
+    }
     ImGui::NewLine();
 
-    editors[mode]->RenderUI();
-
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
+    // editor gui
+    if (ImGui::CollapsingHeader("Editor"))
+    {
+        ImGui::Indent();
+        editors[mode]->RenderUI();
+        ImGui::Unindent();
+    }
     ImGui::End();
 }
 

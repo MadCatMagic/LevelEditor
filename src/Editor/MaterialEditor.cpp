@@ -19,7 +19,7 @@ MaterialEditor::~MaterialEditor()
 void MaterialEditor::SetupTools()
 {
 	MaterialTool* t = new MaterialTool(target, "material_tool_icon.png");
-	t->SetToolReference(&selectedTool);
+	t->SetManager(mats);
 	tools.push_back(t);
 }
 
@@ -40,6 +40,23 @@ void MaterialEditor::Render()
 }
 
 void MaterialEditor::RenderUI()
+{
+}
+
+void MaterialEditor::OnReload()
+{
+}
+
+void MaterialTool::OnHoldClick(bool shift, bool ctrl, const v2i& pos)
+{
+	TileData* t = level->GetTile(pos, layer);
+	if (t != nullptr && t->solid)
+	{
+		t->material = selectedTool;
+	}
+}
+
+void MaterialTool::OnGUI()
 {
 	static int currentTab = 0;
 	if (ImGui::Button("Prev Tab <--"))
@@ -64,17 +81,4 @@ void MaterialEditor::RenderUI()
 	}
 
 	selectedTool = currentTab * 16 + mats->GetSelectedOnPage(currentTab);
-}
-
-void MaterialEditor::OnReload()
-{
-}
-
-void MaterialTool::OnHoldClick(bool shift, bool ctrl, const v2i& pos)
-{
-	TileData* t = level->GetTile(pos, layer);
-	if (t != nullptr && t->solid)
-	{
-		t->material = *selectedTool;
-	}
 }

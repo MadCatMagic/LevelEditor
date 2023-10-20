@@ -27,8 +27,16 @@ public:
 
 	void OnHoldClick(bool shift, bool ctrl, const v2i& pos) override;
 
+	void OnGUI() override;
+
 	inline TileEffectTool* Init(EffectEditor* p) { parent = p; return this; }
 	EffectEditor* parent = nullptr;
+
+private:
+	int tileRange = 1;
+	// from 1 - 15, with the amount added per tile being (strength - 8)
+	int strength = 8;
+	float falloff = 0.0f;
 };
 
 class GranularEffectTool : public EditorTool

@@ -27,6 +27,10 @@ public:
 	// called when the active editor is switched to this one
 	virtual inline void OnEditorActive() {};
 
+	// called when the scene is updated
+	// always
+	virtual inline void Update() {};
+
 	friend class Editor;
 
 	int selectedTool = 0;
