@@ -7,15 +7,13 @@
 Effect::Effect(const std::string& displayName, const v3& tint)
 	: name(displayName), editorTint(tint)
 {
-	effectMap.tiles = new TileMap();
+	effectMap = new TileMap(tilesPerUnit);
 }
 
 Effect::~Effect()
 {
-	if (perTile)
-		delete effectMap.tiles;
-	else
-		delete effectMap.tex;
+	if (effectMap != nullptr)
+		delete effectMap;
 }
 
 EffectManager* EffectManager::instance = nullptr;
@@ -56,7 +54,8 @@ Effect* EffectManager::GetEffectFromName(const std::string& name)
 AgeEffect::AgeEffect()
 	: Effect("Ageing", v3(0.6f, 0.8f, 0.2f))
 { 
-	effectMap.tiles = new TileMap();
+	tilesPerUnit = v2(0.5f);
+	effectMap = new TileMap(tilesPerUnit);
 }
 
 void AgeEffect::ProcessImage(const v2& bottomLeft, const v2& camSize, PixelTexture2D* normal, PixelTexture2D* colour)
@@ -66,12 +65,13 @@ void AgeEffect::ProcessImage(const v2& bottomLeft, const v2& camSize, PixelTextu
 		for (int x = 0; x < size.x; x++)
 		{
 			v4& ref = normal->At(v2i(x, y));
-			int t = effectMap.tiles->GetTile((v2i)(bottomLeft + v2::Scale(camSize, v2(x / (float)size.x, y / (float)size.y))));
+			int t = effectMap->GetTile(bottomLeft + v2::Scale(camSize, v2(x / (float)size.x, y / (float)size.y)));
 			ref = ref * 0.5f + v4(editorTint * (float)t / 30.0f);
 		}
 }
 
-Effect::TileMap::TileMap()
+Effect::TileMap::TileMap(const v2& tilesPerUnit)
+	: tilesPerUnit(tilesPerUnit)
 {
 	for each (auto & pair in Level::instance->chunkMap)
 		CreateChunk(pair.first);
@@ -176,7 +176,7 @@ void Effect::TileMap::SetData(const std::string& str)
 
 // when you are simply getting the data, nothing matters particularly so don't bother creating any new chunks
 // can return zero as a default value since any call to SetTile will create that empty value.
-int Effect::TileMap::GetTile(const v2i& pos) const
+int Effect::TileMap::GetTile(const v2& pos) const
 {
 	v2i offset;
 	v2i div;
@@ -190,7 +190,7 @@ int Effect::TileMap::GetTile(const v2i& pos) const
 }
 
 // if you try and get a tile that is not a valid position, create a new chunk there in order to create that position
-void Effect::TileMap::SetTile(const v2i& pos, int newValue)
+void Effect::TileMap::SetTile(const v2& pos, int newValue)
 {
 	v2i offset;
 	v2i div;
@@ -236,13 +236,14 @@ void Effect::TileMap::TrimChunks()
 	}
 }
 
-bool Effect::TileMap::ValidPosition(const v2i& pos, v2i* div, v2i* offset) const
+bool Effect::TileMap::ValidPosition(const v2& pos, v2i* div, v2i* offset) const
 {
 	// so here, if pos.x or pos.y < 0 then the division results in div being 0,0 which is wrong, 
 	// so if it is negative, subtract 16,16 to offset this
 	// same reasoning for xoffset, should be 16 - offset
-	v2i negative = v2i(pos.x < 0, pos.y < 0);
-	*div = v2i((pos.x - 16 * negative.x) / 16, (pos.y - 16 * negative.y) / 16);
-	*offset = v2i((pos.x % 16 + 16) % 16, (pos.y % 16 + 16) % 16);
+	v2i truePos = v2i((int)(pos.x / tilesPerUnit.x), (int)(pos.y / tilesPerUnit.y));
+	v2i negative = v2i(truePos.x < 0, truePos.y < 0);
+	*div = v2i((truePos.x - 16 * negative.x) / 16, (truePos.y - 16 * negative.y) / 16);
+	*offset = v2i((truePos.x % 16 + 16) % 16, (truePos.y % 16 + 16) % 16);
 	return map.find(*div) != map.end();
 }

@@ -63,16 +63,9 @@ void FileManager::SaveLevel(Level* level, const std::string& filename)
     {
         Effect* effect = EffectManager::instance->GetEffect(i);
         stream << effect->name << "#";
-        if (effect->perTile)
-        {
-            std::string data = effect->effectMap.tiles->GetData();
-            stream << data.size() << "#";
-            stream << data;
-        }
-        else 
-        {
-            // todo
-        }
+        std::string data = effect->effectMap->GetData();
+        stream << data.size() << "#";
+        stream << data;
         stream << ";";
     }
     stream << "~";
@@ -241,7 +234,7 @@ Level* FileManager::LoadLevel(const std::string& filename)
                         centre = i;
 
                 std::string part1 = chunkPos.substr(0, centre);
-                std::string part2 = chunkPos.substr(centre + 1, chunkPos.size() - centre);
+                std::string part2 = chunkPos.substr((size_t)centre + 1, chunkPos.size() - centre);
                 v2i pos = v2i(std::stoi(part1), std::stoi(part2));
                 chunk->chunkPos = pos;
 
@@ -328,12 +321,8 @@ Level* FileManager::LoadLevel(const std::string& filename)
                     continue;
                 }
 
-                if (e->perTile)
-                    e->effectMap.tiles->SetData(effectData);
-                else
-                {
-                    // todo
-                }
+                e->effectMap->SetData(effectData);
+
                 effectData = "";
                 effectName = "";
             }

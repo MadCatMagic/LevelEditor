@@ -12,20 +12,15 @@ struct Effect
 	std::string name;
 	v3 editorTint;
 	
-	bool perTile = true;
+	v2 tilesPerUnit = v2::one;
 
 	virtual void ProcessImage(const v2& bottomLeft, const v2& camSize, PixelTexture2D* normal, PixelTexture2D* colour) { };
-
-	class GranularMap
-	{
-		// todo
-	};
 
 	class TileMap
 	{
 	public:
 
-		TileMap();
+		TileMap(const v2& tilesPerUnit);
 		TileMap(const v2i& chunkSizes);
 
 		void CreateChunk(const v2i& chunkPos);
@@ -35,9 +30,9 @@ struct Effect
 		void SetData(const std::string& str);
 
 		// returns 0-15
-		int GetTile(const v2i& pos) const;
+		int GetTile(const v2& pos) const;
 		// newValue must be 0-15
-		void SetTile(const v2i& pos, int newValue);
+		void SetTile(const v2& pos, int newValue);
 
 		std::unordered_map<v2i, size_t, vecHash::KeyHash<v2i, int>, vecHash::KeyEqual<v2i>> map;
 
@@ -47,16 +42,13 @@ struct Effect
 		void TrimChunks();
 
 	private:
-		bool ValidPosition(const v2i& pos, v2i* div, v2i* offset) const;
+		bool ValidPosition(const v2& pos, v2i* div, v2i* offset) const;
 
+		v2 tilesPerUnit;
 		std::vector<std::vector<uint64_t>> data;
 	};
 
-	union effectMapping
-	{
-		GranularMap* tex;
-		TileMap* tiles;
-	} effectMap;
+	TileMap* effectMap;
 };
 
 class EffectManager
