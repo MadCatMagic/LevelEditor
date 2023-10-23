@@ -228,19 +228,21 @@ void Editor::RenderUI(ImGuiIO* io)
     ImGui::NewLine();
 
     // tool gui options tab
-    if (selectedTool != nullptr)
+    if (selectedTool == nullptr)
+        ImGui::BeginDisabled();
+    if (ImGui::CollapsingHeader("Tool options", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
     {
-        if (ImGui::CollapsingHeader("Tool options"))
-        {
-            ImGui::Indent();
+        ImGui::Indent();
+        if (selectedTool != nullptr)
             selectedTool->OnGUI();
-            ImGui::Unindent();
-        }
-        ImGui::NewLine();
+        ImGui::Unindent();
     }
+    if (selectedTool == nullptr)
+        ImGui::EndDisabled();
+    ImGui::NewLine();
 
     // level managing tab
-    if (ImGui::CollapsingHeader("Level Saving/Loading"))
+    if (ImGui::CollapsingHeader("Level Saving/Loading", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
     {
         ImGui::Indent();
         static char fname[64] = "level0";
@@ -263,7 +265,7 @@ void Editor::RenderUI(ImGuiIO* io)
     ImGui::NewLine();
 
     // editor gui
-    if (ImGui::CollapsingHeader("Editor"))
+    if (ImGui::CollapsingHeader("Editor", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
     {
         ImGui::Indent();
         editors[mode]->RenderUI();

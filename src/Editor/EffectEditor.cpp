@@ -112,7 +112,7 @@ void TileEffectTool::OnHoldClick(bool shift, bool ctrl, const v2& exactPos)
 				if (offset * fo < 1.0f)
 				{
 					float limit = 1.0f / std::abs((float)offset);
-					float scale = fo / limit; // 0 <= scale <= 1
+					float scale = std::min(fo / limit, 0.999f); // 0 <= scale <= 1
 					// maybe works?
 					if (secondCounter % std::min((int)(1.0f / scale), 16) != 0)
 						continue;

@@ -18,6 +18,8 @@ void FileManager::ExportLevel(Level* level, const std::string& filename)
 void FileManager::SaveLevel(Level* level, const std::string& filename)
 {
     std::stringstream stream;
+    // first, always write the filemanager version
+    stream << "&" << latestVersion << "\n";
     // first dump the entity data
     for each (Entity* e in level->entities)
     {
@@ -72,7 +74,7 @@ void FileManager::SaveLevel(Level* level, const std::string& filename)
 
     std::ofstream writeStream = std::ofstream("levels/" + filename + ".lvl", std::ios::out | std::ios::trunc);
     std::string s = stream.str();
-    writeStream.write((char*)s.data(), s.size());
+    writeStream.write(s.data(), s.size());
     writeStream.close();
 }
 
@@ -86,10 +88,42 @@ Level* FileManager::LoadLevel(const std::string& filename)
         return nullptr;
     }
 
+    char c;
+    std::string version;
+    bool first = true;
+    // first, the file version type. This is used for migrating older files.
+    while (stream.get(c)) 
+    {
+        if (first && c != '&')
+        {
+            // panic !
+            // try to migrate to this version
+            std::cout << "Warning: file '" << filename << "' doesn't have a valid version associated with it, assuming to be version 0." << std::endl;
+            stream.close();
+            MigrateToLatest(filename, 0);
+            return LoadLevel(filename);
+        }
+        else if (!first)
+        {
+            if (c != '\n')
+                version.push_back(c);
+            else
+                break;
+        }
+
+        first = false;
+    }
+
+    if (version != latestVersion)
+    {
+        stream.close();
+        MigrateToLatest(filename, VersionNumFromString(version));
+        return LoadLevel(filename);
+    }
+
     Level* level = new Level(v2i::zero);
 
     // entity data
-    char c;
     // 0: pos.x, 1: pos.y, 2: name, then go until end
     int readingState = 0;
 
@@ -352,4 +386,43 @@ Level* FileManager::LoadLevel(const std::string& filename)
 
     stream.close();
     return level;
+}
+
+int FileManager::VersionNumFromString(const std::string& str)
+{
+    if (str == "Version 1")
+        return 1;
+}
+
+void FileManager::MigrateToLatest(const std::string& filename, int fileVersion)
+{
+    std::ifstream stream("levels/" + filename + ".lvl");
+    if (!stream.is_open())
+    {
+        std::cout << "migration failed as level doesn't exist?: " << "levels/" + filename + ".lvl" << std::endl;
+        return;
+    }
+
+    // get the contents of the file
+    std::stringstream ss;
+    ss << stream.rdbuf();
+    std::string datas = ss.str();
+
+    // do stuff to the file
+    while (fileVersion < VersionNumFromString(latestVersion))
+        datas = IncrementMigration(fileVersion, datas);
+
+    // write back to the file
+    std::ofstream writeStream = std::ofstream("levels/" + filename + ".lvl", std::ios::out | std::ios::trunc);
+    writeStream.write(datas.c_str(), datas.size());
+    writeStream.close();
+}
+
+std::string FileManager::IncrementMigration(int& version, const std::string& data)
+{
+    if (version == 0)
+    {
+        version = 1;
+        return "&Version 1\n" + data;
+    }
 }
