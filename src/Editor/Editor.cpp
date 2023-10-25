@@ -230,47 +230,69 @@ void Editor::RenderUI(ImGuiIO* io)
     // tool gui options tab
     if (selectedTool == nullptr)
         ImGui::BeginDisabled();
-    if (ImGui::CollapsingHeader("Tool options", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
-    {
-        ImGui::Indent();
-        if (selectedTool != nullptr)
-            selectedTool->OnGUI();
-        ImGui::Unindent();
-    }
+
+    ImGui::SeparatorText("Tool Options");
+    if (selectedTool != nullptr)
+        selectedTool->OnGUI();
+
     if (selectedTool == nullptr)
         ImGui::EndDisabled();
     ImGui::NewLine();
 
     // level managing tab
-    if (ImGui::CollapsingHeader("Level Saving/Loading", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
+    ImGui::SeparatorText("Level Saving/Loading");
+    static char fname[64] = "";
+    ImGui::InputText("File name", fname, 64);
+    if (ImGui::Button("Save Level"))
     {
-        ImGui::Indent();
-        static char fname[64] = "level0";
-        ImGui::InputText("File name", fname, 64);
-        if (ImGui::Button("Save Level"))
+        // first check the name isnt empty
+        if (fname[0] == '\0')
         {
-            FileManager fm = FileManager();
-            fm.SaveLevel(level, std::string(fname));
+            ImGui::OpenPopup("filenameEmpty");
+            goto exit;
         }
-        ImGui::SameLine();
-        if (ImGui::Button("Load Level"))
+
+        // then check if we are going to overwrite a file or not
+        if (FileManager::LevelExists(std::string(fname)) && std::string(fname) != level->file)
         {
-            FileManager fm = FileManager();
-            Level* l = fm.LoadLevel(std::string(fname));
-            if (l != nullptr)
-                ReloadLevel(l);
+            ImGui::OpenPopup("overwritingFile");
+            goto exit;
         }
-        ImGui::Unindent();
+
+        SaveLevel(fname);
+    }
+exit:
+
+    // deal with the popups
+    if (ImGui::BeginPopup("filenameEmpty"))
+    {
+        ImGui::Text("You seem to have not entered\nanything as the file name...");
+        ImGui::EndPopup();
+    }
+
+    if (ImGui::BeginPopup("overwritingFile"))
+    {
+        ImGui::Text("There already exists a file by this name,\nare you sure you want to overwrite it?");
+        if (ImGui::Selectable("Yes!"))
+            SaveLevel(fname);
+        ImGui::Selectable("no...");
+        ImGui::EndPopup();
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Load Level"))
+    {
+        FileManager fm = FileManager();
+        Level* l = fm.LoadLevel(std::string(fname));
+        if (l != nullptr)
+            ReloadLevel(l);
     }
     ImGui::NewLine();
 
     // editor gui
-    if (ImGui::CollapsingHeader("Editor", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
-    {
-        ImGui::Indent();
-        editors[mode]->RenderUI();
-        ImGui::Unindent();
-    }
+    ImGui::SeparatorText("Active Editor");
+    editors[mode]->RenderUI();
+
     ImGui::End();
 }
 
@@ -292,6 +314,13 @@ v2 Editor::PixelToScreen(const v2& p) const
 v2 Editor::ScreenToPixel(const v2& p) const
 {
     return v2::Scale((p + v2::one) * 0.5f, winSize);
+}
+
+void Editor::SaveLevel(const std::string& fname)
+{
+    FileManager fm = FileManager();
+    fm.SaveLevel(level, std::string(fname));
+    level->file = fname;
 }
 
 int Editor::GetIndex(const v2i& pos) const

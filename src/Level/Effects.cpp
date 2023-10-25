@@ -64,8 +64,8 @@ void AgeEffect::ProcessImage(const v2& bottomLeft, const v2& camSize, PixelTextu
 	for (int y = 0; y < size.y; y++)
 		for (int x = 0; x < size.x; x++)
 		{
-			v4& ref = normal->At(v2i(x, y));
-			int t = effectMap->GetTile(bottomLeft + v2::Scale(camSize, v2(x / (float)size.x, y / (float)size.y)));
+			v4& ref = normal->At(v2i(x, size.y - y - 1));
+			int t = effectMap->GetTile(bottomLeft + v2::Scale(camSize, v2(x / (float)size.x, (size.y - y - 1) / (float)size.y)));
 			ref = ref * 0.5f + v4(editorTint * (float)t / 30.0f);
 		}
 }

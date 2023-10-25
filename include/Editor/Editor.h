@@ -28,7 +28,7 @@ public:
 	inline int GetCurrentLayer() const { return currentLayer; }
 
 private:
-	
+	void SaveLevel(const std::string& fname);
 
 	enum EditorMode {Geometry = 0, Material = 1, Logic = 2, Effect = 3};
 	EditorMode mode = EditorMode::Geometry;

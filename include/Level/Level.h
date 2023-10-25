@@ -54,6 +54,8 @@ public:
 	std::vector<Entity*> entities;
 	std::vector<AreaTrigger*> triggers;
 
+	std::string file;
+
 private:
 	void CreateChunk(const v2i& chunkPos);
 	void CreateChunk(TileChunk* chunk);

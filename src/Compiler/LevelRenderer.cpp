@@ -71,7 +71,13 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 			TileRenderData trd = renderData[tileRenderDataPos.x][tileRenderDataPos.y];
 
 			if (trd.solid)
-				normalData[tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1))] = trd.mat->GetDataAtPoint(realPos, trd);
+			{
+				int ind = tex->CoordToIndex(v2i(x, cam.pixelSize.y - y - 1));
+				v4 normalValue = trd.mat->GetDataAtPoint(realPos, trd);
+				normalData[ind] = normalValue;
+				data[ind] = v4(1.0f, 1.0f, 1.0f, normalValue.w);
+			}
+
 
 			/*
 			TileData* t = level->GetTile(lower, 0);
@@ -87,10 +93,29 @@ PixelTexture2D* LevelRenderer::RenderCamera(Camera camera)
 		EffectManager::instance->GetEffect(i)->ProcessImage(camera.position - camera.dimensions * 0.5f, camera.dimensions, normal, tex);
 	}
 
+	PixelTexture2D* colourDepth = new PixelTexture2D();
+	colourDepth->CreateTexture(cam.pixelSize);
+	v4* colour = colourDepth->GetRawData();
+
+	// apply normal and tex to colourDepth
+	// the first channel of colourDepth (r) corresponds to one of 256 colours defined as the activeColourPalette
+	// the second channel is depth (g)
+	// the third channel is unused (b)
+	// the alpha channel is alpha (a)
+
+	for (int y = 0; y < cam.pixelSize.y; y++)
+		for (int x = 0; x < cam.pixelSize.x; x++)
+		{
+			int index = colourDepth->CoordToIndex(v2i(x, y));
+			colour[index] = v4(normalData[index].x, normalData[index].y, normalData[index].z, data[index].w);
+		}
+
 	tex->UpdateTexture();
 	normal->UpdateTexture();
+	colourDepth->UpdateTexture();
 	delete tex;
-	return normal;
+	delete normal;
+	return colourDepth;
 }
 
 v2i LevelRenderer::WorldToPixel(const v2& position) const

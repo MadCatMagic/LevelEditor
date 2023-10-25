@@ -12,7 +12,11 @@ public:
 	void SaveLevel(Level* level, const std::string& filename);
 	Level* LoadLevel(const std::string& filename);
 
+	static bool LevelExists(const std::string& filename);
+
 private:
+	static inline std::string NameToFilepath(const std::string& f) { return "levels/" + f + ".lvl"; }
+
 	const std::string latestVersion = "Version 1";
 	int VersionNumFromString(const std::string& str);
 

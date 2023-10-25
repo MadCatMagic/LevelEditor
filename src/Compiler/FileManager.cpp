@@ -8,6 +8,8 @@
 
 #include <iostream>
 
+#include <filesystem>
+
 void FileManager::ExportLevel(Level* level, const std::string& filename)
 {
     Compiler compiler = Compiler(level);
@@ -385,7 +387,16 @@ Level* FileManager::LoadLevel(const std::string& filename)
     }
 
     stream.close();
+
+    // add level filepath to the level
+    level->file = filename;
     return level;
+}
+
+bool FileManager::LevelExists(const std::string& filename)
+{
+    std::filesystem::path f = std::filesystem::path(NameToFilepath(filename));
+    return std::filesystem::exists(f);
 }
 
 int FileManager::VersionNumFromString(const std::string& str)

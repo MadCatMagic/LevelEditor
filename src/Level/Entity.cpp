@@ -18,9 +18,11 @@ void Camera::UI(Level* l)
 {
 	bool previousPreview = preview;
 	if (ImGui::InputFloat2("Dimensions", &dimensions.x))
+	{
+		dimensions = v2((float)(int)(dimensions.x * 16.0f) / 16.0f, (float)(int)(dimensions.y * 16.0f) / 16.0f);
+		pixelSize = (v2i)(dimensions * 16.0f);
 		VariableHasChanged();
-	if (ImGui::InputInt2("Pixel Size", &pixelSize.x))
-		VariableHasChanged();
+	}
 
 	ImGui::NewLine();
 	ImGui::Checkbox("Enable Camera Preview", &preview);
