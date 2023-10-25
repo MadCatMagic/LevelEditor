@@ -60,5 +60,8 @@ private:
 	class LayerTool* layerTool = nullptr;
 	int currentLayer = 0;
 
+	// console
+	class Console* console = nullptr;
+
 };
 

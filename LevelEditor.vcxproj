@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Editor\Console.cpp" />
     <ClCompile Include="src\Editor\EffectEditor.cpp" />
     <ClCompile Include="src\Editor\LogicTool.cpp" />
     <ClCompile Include="src\Level\Effects.cpp" />
@@ -65,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Compiler\LevelRenderer.h" />
+    <ClInclude Include="include\Editor\Console.h" />
     <ClInclude Include="include\Editor\EditorTool.h" />
     <ClInclude Include="include\Compiler\FileManager.h" />
     <ClInclude Include="include\Compiler\Compiler.h" />

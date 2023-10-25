@@ -14,6 +14,8 @@
 #include "Editor/LogicEditor.h"
 #include "Editor/EffectEditor.h"
 
+#include "Editor/Console.h"
+
 #include "tracy/Tracy.hpp"
 
 Editor::Editor()
@@ -34,6 +36,8 @@ Editor::~Editor()
         EditorGizmos::Release();
 
         delete level;
+
+        delete console;
     }
 }
 
@@ -42,6 +46,11 @@ void Editor::Initialize(Level* target, const v2i& windowSize)
     if (initialized)
         std::cout << "already initialized, what are you doing you silly girl" << std::endl;
     initialized = true;
+
+    console = new Console();
+    Console::Log("Initialized console :)");
+    Console::LogErr("Test Error (don't worry)");
+    Console::LogWarn("Test Warning (it is all cool)");
 
     winSize = windowSize;
     whiteTex = new Texture2D("res/white.png");
@@ -180,6 +189,10 @@ void Editor::RenderUI(ImGuiIO* io)
     ZoneScoped;
     ImGui::Begin("Editor");
 
+    ImGui::Checkbox("Enable Console", &console->enabled);
+    if (Input::GetKeyDown(Input::Key::GRAVE)) // this doesnt seem to work?
+        console->enabled = !console->enabled;
+
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
 
     ImGui::Text(("viewerPosition: " + viewerPosition.ToString() + " viewerScale: " + viewerScale.ToString()).c_str());
@@ -294,6 +307,8 @@ exit:
     editors[mode]->RenderUI();
 
     ImGui::End();
+
+    console->GUI();
 }
 
 v2 Editor::PixelToWorld(const v2& p) const
