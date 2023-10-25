@@ -2,7 +2,7 @@
 #include "Level/Level.h"
 #include "Level/SpriteSheet.h"
 
-#include <iostream>
+#include "Editor/Console.h"
 #include <fstream>
 #include <filesystem>
 #include <sys/stat.h>
@@ -20,7 +20,7 @@ void MaterialManager::PopulateMaterialList()
 	std::ifstream stream("res/materials/pages.dat");
 	if (!stream.is_open())
 	{
-		std::cout << "Error: MaterialManager could not find 'pages.dat' in res/materials. Panic!";
+		Console::LogErr("MaterialManager could not find 'pages.dat' in res/materials. Panic!");
 		return;
 	}
 
@@ -37,7 +37,7 @@ void MaterialManager::PopulateMaterialList()
 		struct stat sb;
 		if (stat(directory.c_str(), &sb))
 		{
-			std::cout << "Warning: Material page " << line << " has no associated folder. Assuming the page is empty." << std::endl;
+			Console::LogWarn("Material page " + line + " has no associated folder.Assuming the page is empty.");
 			continue;
 		}
 
@@ -52,7 +52,7 @@ void MaterialManager::PopulateMaterialList()
 					pages[lineNum].length++;
 				}
 				else
-					std::cout << "Error: something went wrong when trying to load the material file '" << entry.path() << "', uh oh!" << std::endl;
+					Console::LogErr("Something went wrong when trying to load the material file '" + entry.path().string() + "', uh oh!");
 			}
 		
 		lineNum++;
@@ -101,7 +101,7 @@ LevelMaterial* MaterialManager::CreateMaterialFromFile(const std::string& filepa
 	std::ifstream stream(filepath);
 	if (!stream.is_open())
 	{
-		std::cout << "MaterialManager failed to open file: " << filepath << std::endl;
+		Console::LogErr("MaterialManager failed to open file: " + filepath);
 		return nullptr;
 	}
 
@@ -134,7 +134,7 @@ LevelMaterial* MaterialManager::CreateMaterialFromFile(const std::string& filepa
 			}
 		if (seperator == -1)
 		{
-			std::cout << "Error: " << filepath << " on line " << lineNum << " has no ':' seperator token" << std::endl;
+			Console::LogErr(filepath + " on line " + std::to_string(lineNum) + " has no ':' seperator token");
 			return nullptr;
 		}
 		std::string first = line.substr(0, seperator);
@@ -150,7 +150,7 @@ LevelMaterial* MaterialManager::CreateMaterialFromFile(const std::string& filepa
 			index = std::stoi(second);
 			if (index > 15 || index < 0)
 			{
-				std::cout << "Error: " << filepath << " on line " << lineNum << " index is not in range, should be 0-15 inclusive, not '" << second << "'\n";
+				Console::LogErr(filepath + " on line " + std::to_string(lineNum) + " index is not in range, should be 0-15 inclusive, not '" + second + "'.");
 				index = 15;
 			}
 		}
@@ -162,7 +162,7 @@ LevelMaterial* MaterialManager::CreateMaterialFromFile(const std::string& filepa
 			else if (second == "none")
 				type = MaterialType::None;
 			else
-				std::cout << "Error: " << filepath << " on line " << lineNum << " unknown material type '" << second << "'\n";
+				Console::LogErr(filepath + " on line " + std::to_string(lineNum) + " unknown material type '" + second + "'.");
 
 		// where the corresponding actual spritemap is stored
 		else if (first == "sprites")
@@ -194,7 +194,7 @@ LevelMaterial* MaterialManager::CreateMaterialFromFile(const std::string& filepa
 
 		// unrecognised identifier
 		else
-			std::cout << "Error: " << filepath << " on line " << lineNum << " unknown identifier '" << first << "'\n";
+			Console::LogErr(filepath + " on line " + std::to_string(lineNum) + " unknown identifier '" + first + "'.");
 	}
 
 	stream.close();
@@ -202,14 +202,14 @@ LevelMaterial* MaterialManager::CreateMaterialFromFile(const std::string& filepa
 	// create material
 	if (index == -1)
 	{
-		std::cout << "Warning: " << filepath << " never set pageIndex, assuming to be the next available index." << std::endl;
+		Console::LogWarn(filepath + " never set pageIndex, assuming to be the next available index.");
 		index = pages[page].length;
 	}
 	int id = page * 16 + index;
 	if (type == MaterialType::None || type == MaterialType::UNINITIALIZED)
 	{
 		if (type == MaterialType::UNINITIALIZED)
-			std::cout << "Warning: " << filepath << " did not provide a material type. Assuming type is none." << std::endl;
+			Console::LogWarn(filepath + " did not provide a material type. Assuming type is none.");
 		return (new LevelMaterial(editorColour, name))->Init(id);
 	}
 	else if (type == MaterialType::BasicTileMap)

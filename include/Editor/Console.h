@@ -33,7 +33,7 @@ private:
 
 	struct Command
 	{
-		ConsoleCommandCallback callback;
+		ConsoleCommandCallback callback = nullptr;
 		std::string name;
 	};
 

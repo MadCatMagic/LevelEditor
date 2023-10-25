@@ -6,7 +6,7 @@
 #include <sstream>
 #include <fstream>
 
-#include <iostream>
+#include "Editor/Console.h"
 
 #include <filesystem>
 
@@ -74,7 +74,7 @@ void FileManager::SaveLevel(Level* level, const std::string& filename)
     }
     stream << "~";
 
-    std::ofstream writeStream = std::ofstream("levels/" + filename + ".lvl", std::ios::out | std::ios::trunc);
+    std::ofstream writeStream = std::ofstream(NameToFilepath(filename), std::ios::out | std::ios::trunc);
     std::string s = stream.str();
     writeStream.write(s.data(), s.size());
     writeStream.close();
@@ -83,10 +83,10 @@ void FileManager::SaveLevel(Level* level, const std::string& filename)
 // the caller of this function takes ownership of the returned pointer
 Level* FileManager::LoadLevel(const std::string& filename)
 {
-    std::ifstream stream("levels/" + filename + ".lvl");
+    std::ifstream stream(NameToFilepath(filename));
     if (!stream.is_open())
     {
-        std::cout << "pray for me: " << "levels/" + filename + ".lvl" << std::endl;
+        Console::LogErr("pray for me: " + NameToFilepath(filename));
         return nullptr;
     }
 
@@ -100,7 +100,7 @@ Level* FileManager::LoadLevel(const std::string& filename)
         {
             // panic !
             // try to migrate to this version
-            std::cout << "Warning: file '" << filename << "' doesn't have a valid version associated with it, assuming to be version 0." << std::endl;
+            Console::LogWarn("File '" + filename + "' doesn't have a valid version associated with it, assuming to be version 0.");
             stream.close();
             MigrateToLatest(filename, 0);
             return LoadLevel(filename);
@@ -353,7 +353,7 @@ Level* FileManager::LoadLevel(const std::string& filename)
                 // make sure the effect name actually refers to an effect
                 if (e == nullptr)
                 {
-                    std::cout << "Error: effect name '" << effectName << "' appears to not exist and so cannot be loaded from file." << std::endl;
+                    Console::LogErr("effect name '" + effectName + "' appears to not exist and so cannot be loaded from file.");
                     continue;
                 }
 
@@ -408,10 +408,10 @@ int FileManager::VersionNumFromString(const std::string& str)
 
 void FileManager::MigrateToLatest(const std::string& filename, int fileVersion)
 {
-    std::ifstream stream("levels/" + filename + ".lvl");
+    std::ifstream stream(NameToFilepath(filename));
     if (!stream.is_open())
     {
-        std::cout << "migration failed as level doesn't exist?: " << "levels/" + filename + ".lvl" << std::endl;
+        Console::LogErr("Migration failed as level doesn't exist?: " + NameToFilepath(filename));
         return;
     }
 
@@ -425,7 +425,7 @@ void FileManager::MigrateToLatest(const std::string& filename, int fileVersion)
         datas = IncrementMigration(fileVersion, datas);
 
     // write back to the file
-    std::ofstream writeStream = std::ofstream("levels/" + filename + ".lvl", std::ios::out | std::ios::trunc);
+    std::ofstream writeStream = std::ofstream(NameToFilepath(filename), std::ios::out | std::ios::trunc);
     writeStream.write(datas.c_str(), datas.size());
     writeStream.close();
 }

@@ -1,5 +1,6 @@
 #include "Editor/Console.h"
 #include "imgui.h"
+#include <iostream>
 
 Console* Console::instance = nullptr;
 
@@ -16,6 +17,7 @@ void Console::Log(const std::string& data)
 	Entry e;
 	e.type = Entry::Type::Info;
 	e.text = "<Info> " + data;
+    std::cout << e.text << std::endl;
 	instance->AddLog(e);
 }
 
@@ -24,6 +26,7 @@ void Console::LogWarn(const std::string& data)
 	Entry e;
 	e.type = Entry::Type::Warning;
 	e.text = "<Warning> " + data;
+    std::cout << e.text << std::endl;
 	instance->AddLog(e);
 }
 
@@ -32,6 +35,7 @@ void Console::LogErr(const std::string& data)
 	Entry e;
 	e.type = Entry::Type::Error;
 	e.text = "<Error> " + data;
+    std::cout << e.text << std::endl;
 	instance->AddLog(e);
 }
 
@@ -168,7 +172,7 @@ int Console::TextEditEvent(ImGuiInputTextCallbackData* data)
         // create list of possible completions
         std::vector<Command> possibilities;
         for (size_t i = 0; i < commands.size(); i++)
-            if (strnicmp(commands[i].name.c_str(), wordStart, (int)(wordEnd - wordStart)) == 0)
+            if (_strnicmp(commands[i].name.c_str(), wordStart, (int)(wordEnd - wordStart)) == 0)
                 possibilities.push_back(commands[i]);
 
         if (possibilities.size() == 0)
@@ -214,7 +218,32 @@ int Console::TextEditEvent(ImGuiInputTextCallbackData* data)
     }
     case ImGuiInputTextFlags_CallbackHistory:
     {
-        // todo
+        const int previousPos = historyPos;
+        if (data->EventKey == ImGuiKey_UpArrow)
+        {
+            if (historyPos <= 0)
+                historyPos = history.size() - 1;
+            else
+                historyPos--;
+        }
+        else if (data->EventKey == ImGuiKey_DownArrow)
+        {
+            if (historyPos >= history.size() - 1)
+                historyPos = 0;
+            else
+                historyPos++;
+        }
+
+        // update
+        if (historyPos != previousPos)
+        {
+            const char* newData = history[historyPos].c_str();
+            data->DeleteChars(0, data->BufTextLen);
+            data->InsertChars(0, newData);
+            if (historyPos == 0)
+                data->CursorPos = cursorPosInCurrent;
+        }
+
         break;
     }
     }
@@ -223,6 +252,14 @@ int Console::TextEditEvent(ImGuiInputTextCallbackData* data)
 
 void Console::ExecuteCommand(const std::string& command)
 {
+    // add command to history and reset historyPos
+    historyPos = 0;
+    history.push_back(command);
+    // remembers 20 historical commands + the current one being entered
+    // index 1 is the oldest item since things get pushed onto the back of the vector and 0 is the current data
+    if (history.size() > 21)
+        history.erase(history.begin() + 1);
+    
     // get the length of the first word
     int wordLength = 0;
     while (true)
@@ -263,5 +300,7 @@ void Console::ExecuteCommand(const std::string& command)
 
 void Console::HelpCallback(std::vector<std::string> arguments)
 {
-    AddRawText("Help!");
+    AddRawText("Possible commands:");
+    for each (const Command& c in instance->commands)
+        AddRawText(" - " + c.name);
 }

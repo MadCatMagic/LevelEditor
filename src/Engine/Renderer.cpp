@@ -48,14 +48,9 @@ namespace Renderer
         s += "\n";
         
 
-
+        std::cout << s << std::endl;
         if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
-        {
-            std::cout << s << std::endl;
             exit(-1);
-        }
-        else
-            std::cout << s << std::endl;
     }
 
     void DebugEnable()

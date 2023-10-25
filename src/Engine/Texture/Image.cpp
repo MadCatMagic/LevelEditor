@@ -1,6 +1,6 @@
 #include "Engine/Texture/Image.h"
 #include "Engine/Texture/ImageLoader.h"
-#include <iostream>
+#include "Editor/Console.h"
 
 Image::Image(const std::string& filepath)
     : filepath(filepath) 
@@ -16,7 +16,7 @@ unsigned char* Image::LoadData()
 {
     dataPointer = ImageLoader::LoadImageData(filepath.c_str(), &width, &height, &bytesPerPixel);
     if (!dataPointer)
-        std::cout << "Warning! Image data failed to load from filepath '" + filepath + "'." << std::endl;
+        Console::LogWarn("Warning! Image data failed to load from filepath '" + filepath + "'.");
     dataLoaded = true;
     return dataPointer;
 }

@@ -39,6 +39,8 @@ namespace Input
 	const Key validKeys[] {
 		Key::BACKSPACE, Key::DELETE, Key::TAB, Key::ESCAPE, Key::SPACE,
 		Key::UPARROW, Key::DOWNARROW, Key::RIGHTARROW, Key::LEFTARROW,
+		
+		Key::COMMA, Key::DOT, Key::GRAVE,
 
 		Key::F1, Key::F2, Key::F3, Key::F4, Key::F5, 
 		Key::F6, Key::F7, Key::F8, Key::F9, Key::F10, 

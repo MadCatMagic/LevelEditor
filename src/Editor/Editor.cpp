@@ -44,7 +44,7 @@ Editor::~Editor()
 void Editor::Initialize(Level* target, const v2i& windowSize)
 {
     if (initialized)
-        std::cout << "already initialized, what are you doing you silly girl" << std::endl;
+        std::cout << "already initialized, what the fuck are you doing, like seriously" << std::endl;
     initialized = true;
 
     console = new Console();
