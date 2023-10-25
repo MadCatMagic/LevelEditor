@@ -77,7 +77,7 @@ void LogicEditor::Update()
 
 void LogicEditor::DeleteTrigger(AreaTrigger* t)
 {
-	for (int i = 0; i < target->triggers.size(); i++)
+	for (int i = 0; i < (int)target->triggers.size(); i++)
 		if (target->triggers[i] == t)
 		{
 			delete target->triggers[i];
@@ -88,7 +88,7 @@ void LogicEditor::DeleteTrigger(AreaTrigger* t)
 
 void LogicEditor::DeleteEntity(Entity* e)
 {
-	for (int i = 0; i < target->entities.size(); i++)
+	for (int i = 0; i < (int)target->entities.size(); i++)
 		if (target->entities[i] == e)
 		{
 			delete target->entities[i];

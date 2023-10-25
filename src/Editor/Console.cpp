@@ -6,6 +6,9 @@ Console* Console::instance = nullptr;
 Console::Console()
 {
 	instance = this;
+    history.push_back("");
+
+    AddCommand(&HelpCallback, "help");
 }
 
 void Console::Log(const std::string& data)
@@ -32,8 +35,21 @@ void Console::LogErr(const std::string& data)
 	instance->AddLog(e);
 }
 
+void Console::Execute(const std::string& command)
+{
+    instance->ExecuteCommand(command);
+}
+
+void Console::AddCommand(ConsoleCommandCallback callback, const std::string& name)
+{
+    Command c;
+    c.callback = callback;
+    c.name = name;
+    instance->commands.push_back(c);
+}
+
 // largely taken from the ImGui example console window demo
-// https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp @ 6859 (at least for this commit)
+// https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp
 void Console::GUI()
 {
 	if (!enabled)
@@ -48,14 +64,13 @@ void Console::GUI()
 
     if (ImGui::SmallButton("Clear")) { ClearLog(); }
     ImGui::SameLine();
-    bool copy_to_clipboard = ImGui::SmallButton("Copy");
-    //static float t = 0.0f; if (ImGui::GetTime() - t > 0.02f) { t = ImGui::GetTime(); AddLog("Spam %f", t); }
+    bool copyToClipboard = ImGui::SmallButton("Copy");
 
     ImGui::Separator();
 
     // Reserve enough left-over height for 1 separator + 1 input text
-    const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-    if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar))
+    const float footerHeightToReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+    if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeightToReserve), false, ImGuiWindowFlags_HorizontalScrollbar))
     {
         if (ImGui::BeginPopupContextWindow())
         {
@@ -63,37 +78,12 @@ void Console::GUI()
             ImGui::EndPopup();
         }
 
-        // Display every line as a separate entry so we can change their color or add custom widgets.
-        // If you only want raw text you can use ImGui::TextUnformatted(log.begin(), log.end());
-        // NB- if you have thousands of entries this approach may be too inefficient and may require user-side clipping
-        // to only process visible items. The clipper will automatically measure the height of your first item and then
-        // "seek" to display only items in the visible area.
-        // To use the clipper we can replace your standard loop:
-        //      for (int i = 0; i < Items.Size; i++)
-        //   With:
-        //      ImGuiListClipper clipper;
-        //      clipper.Begin(Items.Size);
-        //      while (clipper.Step())
-        //         for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
-        // - That your items are evenly spaced (same height)
-        // - That you have cheap random access to your elements (you can access them given their index,
-        //   without processing all the ones before)
-        // You cannot this code as-is if a filter is active because it breaks the 'cheap random-access' property.
-        // We would need random-access on the post-filtered list.
-        // A typical application wanting coarse clipping and filtering may want to pre-compute an array of indices
-        // or offsets of items that passed the filtering test, recomputing this array when user changes the filter,
-        // and appending newly elements as they are inserted. This is left as a task to the user until we can manage
-        // to improve this example code!
-        // If your items are of variable height:
-        // - Split them into same height items would be simpler and facilitate random-seeking into your list.
-        // - Consider using manual call to IsRectVisible() and skipping extraneous decoration from your items.
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
-        if (copy_to_clipboard)
+        if (copyToClipboard)
             ImGui::LogToClipboard();
         for (const Entry& entry : entries)
         {
-            // Normally you would store more information in your item than just a string.
-            // (e.g. make Items[] an array of structure, store color/type etc.)
+            // display each entry
             ImVec4 color;
             bool has_color = false;
             if (entry.type == Entry::Type::Error) { color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); has_color = true; }
@@ -104,11 +94,10 @@ void Console::GUI()
             if (has_color)
                 ImGui::PopStyleColor();
         }
-        if (copy_to_clipboard)
+        if (copyToClipboard)
             ImGui::LogFinish();
-
-        // Keep up at the bottom of the scroll region if we were already at the bottom at the beginning of the frame.
-        // Using a scrollbar or mouse-wheel will take away from the bottom edge.
+        
+        // apply our scrolling settings
         if (scrollToBottom || (autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
             ImGui::SetScrollHereY(1.0f);
         scrollToBottom = false;
@@ -119,23 +108,160 @@ void Console::GUI()
     ImGui::Separator();
 
     // Command-line
-    bool reclaim_focus = false;
+    bool reclaimFocus = false;
     ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory;
-    if (ImGui::InputText("Input", InputBuf, IM_ARRAYSIZE(InputBuf), input_text_flags, &TextEditCallbackStub, (void*)this))
+    char inputBuffer[256] = "";
+    if (ImGui::InputText("Input", inputBuffer, 256, input_text_flags, &TextEditCallback, (void*)this))
     {
-        char* s = InputBuf;
-        Strtrim(s);
-        if (s[0])
-            ExecCommand(s);
-        strcpy(s, "");
-        reclaim_focus = true;
+        if (inputBuffer[0] != '\0')
+            ExecuteCommand(std::string(inputBuffer));
+        strcpy_s(inputBuffer, "");
+        reclaimFocus = true;
     }
 
     // Auto-focus on window apparition
+    // who knows what this does :)
     ImGui::SetItemDefaultFocus();
-    if (reclaim_focus)
+    if (reclaimFocus)
         ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
 
-
 	ImGui::End();
+}
+
+void Console::AddRawText(const std::string& text)
+{
+    Entry e;
+    e.type = Entry::Type::Info;
+    e.text = text;
+    instance->AddLog(e);
+}
+
+int Console::TextEditCallback(ImGuiInputTextCallbackData* data)
+{
+    Console* console = (Console*)data->UserData;
+    return console->TextEditEvent(data);
+}
+
+int Console::TextEditEvent(ImGuiInputTextCallbackData* data)
+{
+    if (historyPos == 0)
+    {
+        history[0] = std::string(data->Buf);
+        cursorPosInCurrent = data->CursorPos;
+    }
+
+    switch (data->EventFlag)
+    {
+    case ImGuiInputTextFlags_CallbackCompletion:
+    {
+        // locate beginning of current word
+        const char* wordEnd = data->Buf + data->CursorPos;
+        const char* wordStart = wordEnd;
+        while (wordStart > data->Buf)
+        {
+            const char c = wordStart[-1];
+            if (c == ' ' || c == '\t' || c == ',' || c == ';')
+                break;
+            wordStart--;
+        }
+
+        // create list of possible completions
+        std::vector<Command> possibilities;
+        for (size_t i = 0; i < commands.size(); i++)
+            if (strnicmp(commands[i].name.c_str(), wordStart, (int)(wordEnd - wordStart)) == 0)
+                possibilities.push_back(commands[i]);
+
+        if (possibilities.size() == 0)
+            AddRawText("Could not find a match for " + std::string(wordStart, (size_t)(wordEnd - wordStart)));
+        else if (possibilities.size() == 1)
+        {
+            // single match, replace entire thing with completion
+            data->DeleteChars((int)(wordStart - data->Buf), (int)(wordEnd - wordStart));
+            data->InsertChars(data->CursorPos, commands[0].name.c_str());
+            data->InsertChars(data->CursorPos, " ");
+        }
+        else 
+        {
+            // multiple cases, complete as much as possible and then print the possibilities
+            int matchLength = (int)(wordEnd - wordStart);
+            while (true)
+            {
+                int c = 0;
+                bool allPossibilityMatches = true;
+                for (int i = 0; i < (int)possibilities.size() && allPossibilityMatches; i++)
+                    if (i == 0)
+                        c = toupper(possibilities[i].name[matchLength]);
+                    else if (c == 0 || c != toupper(possibilities[i].name[matchLength]))
+                        allPossibilityMatches = false;
+                if (!allPossibilityMatches)
+                    break;
+                matchLength++;
+            }
+
+            if (matchLength > 0)
+            {
+                data->DeleteChars((int)(wordStart - data->Buf), (int)(wordEnd - wordStart));
+                data->InsertChars(data->CursorPos, possibilities[0].name.c_str(), possibilities[0].name.c_str() + matchLength);
+            }
+
+            // List matches
+            AddRawText("Possible matches:");
+            for (int i = 0; i < (int)possibilities.size(); i++)
+                AddRawText("- " + possibilities[i].name);
+        }
+
+        break; 
+    }
+    case ImGuiInputTextFlags_CallbackHistory:
+    {
+        // todo
+        break;
+    }
+    }
+    return 0;
+}
+
+void Console::ExecuteCommand(const std::string& command)
+{
+    // get the length of the first word
+    int wordLength = 0;
+    while (true)
+    {
+        char c = command[wordLength];
+        if (c == '\0' || c == ' ' || c == ',' || c == ';' || c == '\t')
+            break;
+        wordLength++;
+    }
+
+    // split up into command/args
+    std::string commandWord = command.substr(0, wordLength);
+    std::string commandArgs;
+    if (wordLength < (int)command.size())
+        std::string commandArgs = command.substr(wordLength + 1);
+
+    // split up args into individual strings
+    std::vector<std::string> args;
+    args.push_back("");
+    for (size_t i = 0; i < commandArgs.size(); i++)
+    {
+        char c = commandArgs[i];
+        if (c == ' ' || c == ',' || c == ';' || c == '\t')
+            args.push_back("");
+        else
+            args[args.size() - 1].push_back(c);
+    }
+
+    // actually try and run the command
+    for (size_t i = 0; i < commands.size(); i++)
+        if (commands[i].name == commandWord)
+        {
+            commands[i].callback(args);
+            return;
+        }
+    LogErr("That was not a real command. (" + commandWord + ")");
+}
+
+void Console::HelpCallback(std::vector<std::string> arguments)
+{
+    AddRawText("Help!");
 }

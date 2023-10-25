@@ -376,7 +376,7 @@ Level* FileManager::LoadLevel(const std::string& filename)
             else
                 accumulate.push_back(c);
         }
-        if (!readingLength && !readingEffectName && counter < length)
+        if (!readingLength && !readingEffectName && counter < (int)length)
         {
             if (counter > 0)
                 effectData.push_back(c);
@@ -403,6 +403,7 @@ int FileManager::VersionNumFromString(const std::string& str)
 {
     if (str == "Version 1")
         return 1;
+    return -1;
 }
 
 void FileManager::MigrateToLatest(const std::string& filename, int fileVersion)

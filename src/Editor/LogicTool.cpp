@@ -20,10 +20,10 @@ void EntityTool::OnClick(bool shift, bool ctrl, const v2& exactPos)
 	// try and select an object
 	int start = 0;
 	bool targetIsEntity = false;
-	for (int i = 0; i < level->entities.size(); i++)
+	for (int i = 0; i < (int)level->entities.size(); i++)
 		if (level->entities[i] == inspector->GetTarget())
 		{
-			start = (i + 1) % level->entities.size();
+			start = (i + 1) % (int)level->entities.size();
 			targetIsEntity = true;
 			break;
 		}
@@ -39,7 +39,7 @@ void EntityTool::OnClick(bool shift, bool ctrl, const v2& exactPos)
 	}
 
 	bool found = false;
-	for (int i = start; i < start + level->entities.size(); i++)
+	for (int i = start; i < start + (int)level->entities.size(); i++)
 	{
 		auto* t = level->entities[i % level->entities.size()];
 		v2 bl = t->position - (t->PlaceAtCentreOfTile() ? 0.0f : 0.5f);
@@ -96,7 +96,7 @@ void EntityTool::OnGUI()
 	static int selectedEntityType = 0;
 	if (ImGui::BeginListBox("Entity Type", ImVec2(0.0f, 50.0f)))
 	{
-		for (int n = 0; n < baseEntityTypes.size(); n++)
+		for (int n = 0; n < (int)baseEntityTypes.size(); n++)
 		{
 			const bool selected = selectedEntityType == n;
 			if (ImGui::Selectable(baseEntityTypes[n]->GetType().c_str(), selected))
@@ -124,16 +124,16 @@ void TriggerEditTool::OnClick(bool shift, bool ctrl, const v2i& pos)
 	else if (shift)
 	{
 		int start = 0;
-		for (int i = 0; i < level->triggers.size(); i++)
+		for (int i = 0; i < (int)level->triggers.size(); i++)
 			if (level->triggers[i] == inspector->GetTarget())
 			{
-				start = (i + 1) % level->triggers.size();
+				start = (i + 1) % (int)level->triggers.size();
 				break;
 			}
 
-		for (int i = start; i < start + level->triggers.size(); i++)
+		for (int i = start; i < start + (int)level->triggers.size(); i++)
 		{
-			auto* t = level->triggers[i % level->triggers.size()];
+			auto* t = level->triggers[i % (int)level->triggers.size()];
 			if (t->bottomLeft.x <= pos.x && pos.x <= t->topRight.x && t->bottomLeft.y <= pos.y && pos.y <= t->topRight.y)
 			{
 				inspector->SetTarget(t);
